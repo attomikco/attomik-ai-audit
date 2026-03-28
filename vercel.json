@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/public/admin.html" },
+    { "source": "/admin", "destination": "/admin.html" },
     { "source": "/r/:token", "destination": "/r/template.html" }
   ]
 }
