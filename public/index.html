@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>AI Visibility Audit — Attomik</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
@@ -349,15 +349,18 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .cta-features { max-width: 100%; }
   .results { padding: 0 1rem 4rem; }
   .hero { padding: 0 1.25rem; }
+  .hero-logo { margin-bottom: 1.25rem; }
+  .hero-logo svg { height: 36px; }
+  .hero-tag { margin-bottom: 1rem; }
+  .hero h1 { margin-bottom: 0.75rem; }
+  .hero-sub { margin-bottom: 1.5rem; }
   .audit-form { flex-direction: column; gap: 8px; }
-  .audit-form input { width: 100%; }
-  .audit-btn { width: 100%; text-align: center; }
+  .audit-form input { width: 100%; font-size: 15px; padding: 14px 16px; }
+  .audit-btn { width: 100%; text-align: center; height: 52px; font-size: 16px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .image-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
   .engines-row { flex-direction: column; }
   .verdict-stats { gap: 1rem; }
-  .ai-pills { gap: 5px; }
-  .ai-pill { font-size: 10px; padding: 2px 10px; }
   .cta-section { padding: 2rem 1.25rem; }
   .scan-inner { padding: 1rem; }
   .scan-radar { width: 140px; height: 140px; }
@@ -791,16 +794,9 @@ body.has-results .landing-only { display: none; }
   </div>
   <div class="hero-tag"><span class="tag-dot"></span>AI Search Visibility Audit</div>
   <h1>Can ChatGPT, Perplexity &amp; Google AI<br><em>find your brand?</em></h1>
-  <p class="hero-sub">AI search is replacing Google. ChatGPT, Perplexity, Copilot, and Google AI Overviews are where buyers go now — most brands are invisible to all of them and don't even know it. Find out in 30 seconds.</p>
-  <div class="ai-pills">
-    <span class="ai-pill">ChatGPT</span>
-    <span class="ai-pill">Perplexity</span>
-    <span class="ai-pill">Google AI Overviews</span>
-    <span class="ai-pill">Claude</span>
-    <span class="ai-pill">Copilot</span>
-  </div>
+  <p class="hero-sub">AI is the new search. Find out if your brand shows up — or gets skipped.</p>
   <div class="audit-form">
-    <input type="text" id="urlInput" placeholder="https://yourbrand.com" />
+    <input type="text" id="urlInput" placeholder="https://yourbrand.com" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="url" />
     <button class="audit-btn" id="auditBtn">Check my AI visibility →</button>
   </div>
   <div class="hero-attomik-link">
@@ -924,7 +920,7 @@ body.has-results .landing-only { display: none; }
   <div class="final-cta-headline">Find out if AI can find your brand.</div>
   <div class="final-cta-sub">Free. Takes 30 seconds. No pitch call.</div>
   <div class="audit-form" style="position:relative;">
-    <input type="text" id="urlInput2" placeholder="https://yourbrand.com" />
+    <input type="text" id="urlInput2" placeholder="https://yourbrand.com" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="url" />
     <button class="audit-btn" id="auditBtn2">Check my AI visibility &rarr;</button>
   </div>
   <div class="final-cta-note">Used by CPG brands doing $1M&ndash;$50M in ecommerce revenue.</div>
