@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Visibility Report — Attomik</title>
+<meta name="robots" content="noindex"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;--surface:#0d0d0d;--surface2:#161616;
+  --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.18);
+  --text:#ffffff;--muted:#bbbbbb;--accent:#00ff97;
+  --accent-dim:rgba(0,255,151,0.1);--accent-border:rgba(0,255,151,0.25);
+  --danger:#ef4444;--warn:#f59e0b;--ok:#00cc78;
+}
+html{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;overflow-x:hidden}
+
+/* TOP BAR */
+.topbar{
+  border-bottom:1px solid var(--border);padding:0 2rem;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;
+}
+.topbar-logo{font-family:'Barlow',sans-serif;font-size:16px;font-weight:900;color:#fff;text-decoration:none;letter-spacing:-0.03em;}
+.topbar-cta{background:var(--accent);color:#000;font-family:'Barlow',sans-serif;font-size:13px;font-weight:800;padding:8px 18px;border-radius:6px;text-decoration:none;white-space:nowrap;letter-spacing:-0.01em;}
+
+/* SHARED BANNER */
+.shared-banner{
+  background:var(--surface);border-bottom:1px solid var(--accent-border);
+  padding:14px 2rem;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center;
+}
+.shared-banner-text{font-size:14px;color:rgba(255,255,255,0.7);}
+.shared-banner-text strong{color:var(--accent);}
+.shared-banner-btn{
+  background:transparent;border:1px solid var(--accent);color:var(--accent);
+  font-family:'DM Mono',monospace;font-size:11px;padding:6px 16px;border-radius:6px;
+  text-decoration:none;white-space:nowrap;letter-spacing:0.04em;
+}
+
+/* MAIN */
+.wrap{max-width:860px;margin:0 auto;padding:2.5rem 2rem 6rem;}
+
+/* SCORE */
+.score-hero{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:16px;padding:2.5rem;text-align:center;margin-bottom:1.5rem;
+}
+.score-label{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.score-num{font-family:'Barlow',sans-serif;font-size:clamp(80px,16vw,120px);font-weight:800;letter-spacing:-0.05em;line-height:1;}
+.score-denom{font-size:0.4em;color:#333;font-weight:400;}
+.score-verdict{font-size:16px;color:rgba(255,255,255,0.6);margin-top:8px;}
+.score-stats{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;}
+.sstat-num{font-family:'Barlow',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.04em;line-height:1;}
+.sstat-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.4);margin-top:3px;}
+
+/* BARS */
+.bars{margin-bottom:1.5rem;}
+.bar-row{margin-bottom:10px;}
+.bar-lbl{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:5px;}
+.bar-track{height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);}
+
+hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
+
+/* ENGINES */
+.section-label-sm{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:4px;}
+.section-sub{font-size:15px;color:rgba(255,255,255,0.65);margin-bottom:1.25rem;}
+.engines-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;}
+.engine-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+.engine-name{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.engine-pct{font-family:'Barlow',sans-serif;font-size:36px;font-weight:800;letter-spacing:-0.04em;line-height:1;}
+.engine-pct span{font-size:18px;}
+.engine-status{font-size:11px;margin-top:4px;}
+
+/* ISSUES */
+.issues-list{display:flex;flex-direction:column;gap:8px;}
+.issue-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;}
+.issue-icon{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.ii-danger{background:rgba(255,87,87,0.18);color:var(--danger);}
+.ii-warn{background:rgba(255,179,71,0.18);color:var(--warn);}
+.issue-headline{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.issue-why{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55;}
+
+/* GATE */
+.gate{
+  background:var(--surface);border:1px solid var(--accent-border);
+  border-radius:14px;padding:2rem;text-align:center;margin-top:1rem;
+  position:relative;overflow:hidden;
+}
+.gate::before{
+  content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  width:300px;height:200px;background:radial-gradient(circle,rgba(0,255,151,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gate-pill{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#000;background:var(--accent);display:inline-block;padding:3px 12px;border-radius:99px;margin-bottom:1rem;}
+.gate h3{font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.03em;color:#fff;margin-bottom:0.5rem;line-height:1.2;}
+.gate p{font-size:14px;color:rgba(255,255,255,0.55);margin-bottom:1.25rem;max-width:360px;margin-left:auto;margin-right:auto;}
+.gate-form{display:flex;gap:8px;max-width:420px;margin:0 auto;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px;}
+.gate-form input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;}
+.gate-form input::placeholder{color:var(--muted);}
+.gate-form button{background:var(--accent);color:#000;border:none;border-radius:5px;padding:9px 18px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.gate-sent{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-top:12px;letter-spacing:0.04em;}
+.gate-note{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);margin-top:8px;letter-spacing:0.03em;}
+
+/* CTA */
+.cta-section{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2.5rem;text-align:center;margin-top:2rem;}
+.cta-section h2{font-family:'Barlow',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.5rem;line-height:1.1;}
+.cta-section h2 em{font-style:normal;color:var(--accent);}
+.cta-section p{color:rgba(255,255,255,0.65);font-size:14px;max-width:380px;margin:0 auto 1.5rem;line-height:1.65;}
+.cta-btn{display:inline-block;background:var(--accent);color:#000;font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:-0.02em;}
+.powered{text-align:center;font-size:11px;color:#333;margin-top:2rem;font-family:'DM Mono',monospace;letter-spacing:0.05em;}
+.powered a{color:#444;text-decoration:none;}
+
+/* LOADING */
+.loading{text-align:center;padding:6rem 2rem;}
+.loading-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);animation:ld 0.8s ease-in-out infinite alternate;}
+.loading-dot:nth-child(2){animation-delay:0.15s;}
+.loading-dot:nth-child(3){animation-delay:0.3s;}
+@keyframes ld{from{opacity:0.3;transform:translateY(0)}to{opacity:1;transform:translateY(-8px)}}
+
+.error{text-align:center;padding:6rem 2rem;color:var(--muted);}
+.error h2{font-family:'Barlow',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.03em;color:#fff;margin-bottom:0.75rem;}
+
+@media(max-width:640px){
+  .engines-grid{grid-template-columns:repeat(2,1fr);}
+  .topbar{padding:0 1rem;}
+  .wrap{padding:1.5rem 1rem 5rem;}
+  .score-stats{gap:1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="https://attomik.co" class="topbar-logo">ATTOMIK</a>
+  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=topbar" class="topbar-cta">Audit my brand →</a>
+</div>
+
+<div class="shared-banner">
+  <span class="shared-banner-text">You're viewing a shared AI Visibility Report. <strong>Want to see yours?</strong></span>
+  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=banner" class="shared-banner-btn">Run free audit →</a>
+</div>
+
+<div class="wrap" id="main">
+  <div class="loading">
+    <div style="margin-bottom:1.5rem;">
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+      <span class="loading-dot"></span>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.08em;text-transform:uppercase;">Loading report</div>
+  </div>
+</div>
+
+<script>
+(async () => {
+  const token = window.location.pathname.split('/').filter(Boolean).pop();
+  const main  = document.getElementById('main');
+
+  if (!token) {
+    main.innerHTML = '<div class="error"><h2>Report not found</h2><p>This link may be invalid or expired.</p></div>';
+    return;
+  }
+
+  let report;
+  try {
+    const res = await fetch(`/api/get-report/${token}`);
+    if (!res.ok) throw new Error('not found');
+    report = await res.json();
+  } catch {
+    window._reportData = report;
+  main.innerHTML = `<div class="error">
+      <h2>Report not found</h2>
+      <p>This link may be invalid or has expired.</p>
+      <a href="https://audit.attomik.co" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:13px;margin-top:1rem;display:inline-block;">Run a free audit →</a>
+    </div>`;
+    return;
+  }
+
+  const {
+    domain, combined_score: combined, ai_score: aiScore, seo_score: seoScore,
+    crit_count: critCount, warn_count: warnCount,
+    issues_json: issues = [], engines_json: engines = [],
+  } = report;
+
+  const sc = combined >= 70 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
+  const verdict = combined >= 70 ? 'Decent foundation — but gaps exist'
+    : combined >= 45 ? 'Largely invisible to AI search' : 'AI cannot confidently recommend this brand';
+
+  const barClass = v => v >= 70 ? 'bf-ok' : v >= 45 ? 'bf-warn' : 'bf-danger';
+
+  const enginesHtml = engines.map(e => `
+    <div class="engine-card">
+      <div class="engine-name">${e.name}</div>
+      <div class="engine-pct" style="color:${e.pct >= 50 ? '#f59e0b' : '#ef4444'};">${e.pct}<span>%</span></div>
+      <div class="engine-status" style="color:${e.pct >= 50 ? '#f59e0b' : '#ef4444'};">${e.label}</div>
+    </div>`).join('');
+
+  // Show first 3 issues, gate the rest
+  const visibleIssues = issues.slice(0, 3);
+  const hiddenCount   = issues.length - 3;
+
+  const issuesHtml = visibleIssues.map(issue => `
+    <div class="issue-item">
+      <div class="issue-icon ii-${issue.sev}">${issue.sev === 'danger' ? '!' : '~'}</div>
+      <div>
+        <div class="issue-headline">${issue.headline}</div>
+        <div class="issue-why">${issue.why}</div>
+      </div>
+    </div>`).join('');
+
+  const gateHtml = hiddenCount > 0 ? `
+    <div class="gate" id="reportGate">
+      <div class="gate-pill">GET FULL REPORT</div>
+      <h3>${hiddenCount} more issue${hiddenCount > 1 ? 's' : ''} hidden on ${domain}</h3>
+      <p>Enter your email and we'll send you the complete report — all ${issues.length} issues, what they mean, and how to fix them.</p>
+      <div class="gate-form">
+        <input type="email" id="gateEmail" placeholder="your@email.com" />
+        <button onclick="submitGate('${domain}', ${combined}, ${aiScore}, ${seoScore}, ${critCount}, ${warnCount})">Send me the full report →</button>
+      </div>
+      <div class="gate-note">Free. No pitch call. We'll follow up with insights.</div>
+    </div>` : '';
+
+  // Update page title
+  document.title = `AI Visibility Report: ${domain} scored ${combined}/100 — Attomik`;
+
+  main.innerHTML = `
+    <!-- HEADER -->
+    <div style="text-align:center;padding:0 0 2rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:4px;">AI Visibility Report</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.03em;color:#fff;">${domain}</div>
+    </div>
+
+    <!-- SCORE -->
+    <div class="score-hero">
+      <div class="score-label">AI Visibility Score</div>
+      <div class="score-num" style="color:${sc};">${combined}<span class="score-denom">/100</span></div>
+      <div class="score-verdict">${verdict}</div>
+      <div class="score-stats">
+        <div><div class="sstat-num" style="color:#ef4444;">${critCount}</div><div class="sstat-label">Critical</div></div>
+        <div><div class="sstat-num" style="color:#f59e0b;">${warnCount}</div><div class="sstat-label">Warnings</div></div>
+        <div><div class="sstat-num" style="color:#00ff97;">${aiScore}</div><div class="sstat-label">AI Ready</div></div>
+        <div><div class="sstat-num" style="color:#888;">${seoScore}</div><div class="sstat-label">SEO Base</div></div>
+      </div>
+    </div>
+
+    <!-- BARS -->
+    <div class="bars">
+      ${[{l:'Overall AI visibility',v:combined,c:'background:#00ff97'},{l:'AI search readiness',v:aiScore,c:''},{l:'Technical SEO',v:seoScore,c:''}].map(b => `
+        <div class="bar-row">
+          <div class="bar-lbl"><span>${b.l}</span><span>${b.v}/100</span></div>
+          <div class="bar-track"><div class="bar-fill" style="${b.c || (b.v >= 70 ? 'background:#00cc78' : b.v >= 45 ? 'background:#f59e0b' : 'background:#ef4444')};width:${b.v}%;"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <hr/>
+
+    <!-- ENGINES -->
+    ${engines.length ? `
+    <div class="section-label-sm">AI ENGINE VISIBILITY</div>
+    <div class="section-sub">How each platform currently sees this brand</div>
+    <div class="engines-grid">${enginesHtml}</div>
+    <hr/>` : ''}
+
+    <!-- ISSUES -->
+    <div class="section-label-sm">${issues.length} ISSUES FOUND</div>
+    <div class="section-sub" style="margin-bottom:1rem;">Active reasons AI is skipping this brand</div>
+    <div class="issues-list">${issuesHtml}</div>
+    ${gateHtml}
+
+    <hr/>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <h2>IS YOUR BRAND <em>INVISIBLE TO AI?</em></h2>
+      <p>Run a free AI visibility audit on your brand. See your score, every issue, and exactly how to fix it.</p>
+      <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=cta&ref=${domain}" class="cta-btn">Audit my brand free →</a>
+    </div>
+
+    <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> · Free AI Search Visibility Scanner</p>
+  `;
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.bar-fill').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => { bar.style.width = w; }, 100);
+    });
+  });
+})();
+
+async function submitGate(domain, combined, aiScore, seoScore, critCount, warnCount) {
+  const input = document.getElementById('gateEmail');
+  const email = input?.value.trim();
+  if (!email || !email.includes('@')) {
+    input.style.borderColor = '#ef4444';
+    input.placeholder = 'Enter a valid email';
+    return;
+  }
+
+  const btn = input.nextElementSibling;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    await fetch('/api/send-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        domain,
+        url: 'https://' + domain,
+        aiScore,
+        seoScore,
+        combined,
+        critCount,
+        warnCount,
+        issues:  window._reportData?.issues_json  || [],
+        engines: window._reportData?.engines_json || [],
+        source:  'shared-report-gate',
+      }),
+    });
+  } catch (err) {
+    console.warn('send failed:', err.message);
+  }
+
+  // Show confirmation regardless — don't block on network
+  const gate = document.getElementById('reportGate');
+  gate.innerHTML = `
+    <div style="padding:0.5rem 0;">
+      <div style="font-size:32px;margin-bottom:0.75rem;">✓</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.4rem;">Report sent to ${email}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);">Check your inbox — the full report is on its way.</div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

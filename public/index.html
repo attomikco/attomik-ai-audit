@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Visibility Audit — Attomik</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --surface2: #161616;
+  --border: rgba(255,255,255,0.12);
+  --border2: rgba(255,255,255,0.18);
+  --text: #ffffff;
+  --muted: #bbbbbb;
+  --accent: #00ff97;
+  --accent-dim: rgba(0,255,151,0.1);
+  --accent-border: rgba(0,255,151,0.25);
+  --danger: #ef4444;
+  --warn: #f59e0b;
+  --ok: #00cc78;
+  --purple: #a78bfa;
+}
+
+html { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; overflow-x: hidden; }
+
+/* HEADER */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+header { display: none; }
+.logo-wrap { display: flex; align-items: center; }
+.logo-wrap svg { height: 22px; width: auto; display: block; }
+
+.hero-attomik-link {
+  margin-top: 1.25rem;
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  color: rgba(255,255,255,0.4); letter-spacing: 0.02em;
+}
+.hero-attomik-link a {
+  color: var(--accent); text-decoration: none;
+  border-bottom: 1px solid rgba(0,255,151,0.3);
+  padding-bottom: 1px; transition: color 0.15s, border-color 0.15s;
+}
+.hero-attomik-link a:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+.hero-logo { display: flex; justify-content: center; margin-bottom: 1.75rem; }
+.hero-logo svg { height: 44px; width: auto; display: block; }
+.header-right { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+.header-right a { color: var(--accent); text-decoration: none; }
+
+/* HERO */
+.hero { max-width: 720px; margin: 0 auto; padding: 0 2rem; text-align: center; min-height: calc(100vh - 60px); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  padding: 4px 14px; border-radius: 99px; margin-bottom: 1.5rem;
+}
+.tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero h1 {
+  font-family: 'Barlow', sans-serif;
+  font-size: clamp(34px, 5.5vw, 58px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin-bottom: 1rem;
+  color: var(--text);
+  text-transform: uppercase;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-sub { font-size: 16px; color: rgba(255,255,255,0.75); max-width: 480px; margin: 0 auto 1.25rem; font-weight: 400; }
+
+.ai-pills { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.ai-pill {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  padding: 3px 12px; border-radius: 99px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.7);
+}
+
+/* FORM */
+.audit-form {
+  max-width: 600px; margin: 0 auto;
+  display: flex; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 6px;
+}
+.audit-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'DM Mono', monospace;
+  font-size: 13px; padding: 8px 10px;
+}
+.audit-form input::placeholder { color: var(--muted); }
+.audit-btn {
+  background: var(--accent); color: #000;
+  border: none; border-radius: 6px; padding: 10px 22px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.1s;
+}
+.audit-btn:hover { background: #00e085; transform: translateY(-1px); }
+.audit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* SCAN OVERLAY */
+.scan-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.97);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.scan-overlay.visible { display: flex; }
+
+.scan-inner { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
+
+.scan-radar {
+  position: relative; width: 180px; height: 180px;
+}
+.scan-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(0,255,151,0.2);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+.r1 { width: 60px; height: 60px; animation: ring-pulse 2s ease-out infinite; }
+.r2 { width: 110px; height: 110px; animation: ring-pulse 2s ease-out infinite 0.4s; }
+.r3 { width: 160px; height: 160px; animation: ring-pulse 2s ease-out infinite 0.8s; }
+@keyframes ring-pulse {
+  0% { border-color: rgba(0,255,151,0.5); transform: translate(-50%,-50%) scale(0.95); }
+  50% { border-color: rgba(0,255,151,0.15); }
+  100% { border-color: rgba(0,255,151,0.5); transform: translate(-50%,-50%) scale(1.05); }
+}
+
+.scan-sweep {
+  position: absolute; top: 50%; left: 50%;
+  width: 90px; height: 2px;
+  transform-origin: left center;
+  animation: sweep 2s linear infinite;
+}
+.scan-sweep::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,151,0.8), #00ff97);
+  border-radius: 2px;
+  box-shadow: 0 0 12px #00ff97, 0 0 24px rgba(0,255,151,0.4);
+}
+@keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.scan-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #00ff97;
+  box-shadow: 0 0 16px #00ff97, 0 0 32px rgba(0,255,151,0.5);
+  animation: center-pulse 1s ease-in-out infinite alternate;
+}
+@keyframes center-pulse {
+  from { box-shadow: 0 0 8px #00ff97, 0 0 16px rgba(0,255,151,0.4); }
+  to   { box-shadow: 0 0 20px #00ff97, 0 0 40px rgba(0,255,151,0.6); }
+}
+
+.scan-url {
+  font-family: 'DM Mono', monospace; font-size: 14px;
+  color: var(--accent); letter-spacing: 0.04em;
+  max-width: 380px; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 500;
+}
+
+.scan-steps {
+  display: flex; flex-direction: column; gap: 10px;
+  min-width: 300px;
+}
+.scan-step {
+  display: flex; align-items: center; gap: 12px;
+  transition: opacity 0.3s;
+  opacity: 0.25;
+}
+.scan-step.active { opacity: 1; }
+.scan-step.done { opacity: 0.7; }
+.scan-step-icon {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.3); transition: all 0.3s;
+}
+.scan-step.active .scan-step-icon { border-color: var(--accent); color: var(--accent); }
+.scan-step.done .scan-step-icon { border-color: var(--accent); background: var(--accent); }
+.scan-step-text { flex: 1; }
+.scan-step-label {
+  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,0.3); letter-spacing: -0.01em;
+  transition: color 0.3s;
+}
+.scan-step.active .scan-step-label { color: #fff; }
+.scan-step.done .scan-step-label { color: var(--accent); }
+.scan-step-sub {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: rgba(255,255,255,0.2); margin-top: 1px;
+  transition: color 0.3s;
+}
+.scan-step.active .scan-step-sub { color: rgba(255,255,255,0.5); }
+.scan-step.done .scan-step-sub { color: rgba(0,255,151,0.5); }
+@keyframes dash-in { to { stroke-dashoffset: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.scan-status {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: rgba(255,255,255,0.25); letter-spacing: 0.08em;
+  text-transform: uppercase; min-height: 14px;
+}
+
+/* RESULTS */
+.results { max-width: 900px; margin: 3rem auto; padding: 0 2rem 5rem; display: none; }
+.results.visible { display: block; }
+
+/* PREVIEW CARD */
+.preview-card {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; overflow: hidden; margin-bottom: 2rem;
+}
+.preview-banner { position: relative; height: 210px; background: var(--surface2); overflow: hidden; }
+.preview-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.65; }
+.preview-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 35%, rgba(10,10,10,0.92)); }
+.preview-text { position: absolute; bottom: 1.25rem; left: 1.5rem; right: 1.5rem; }
+.preview-domain { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 5px; letter-spacing: 0.06em; }
+.preview-title { font-family: 'Barlow', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); line-height: 1.2; }
+.preview-desc { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.preview-chips { padding: 1.1rem 1.5rem; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+.chip {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--muted); background: var(--surface2);
+  border: 1px solid var(--border); padding: 4px 12px; border-radius: 99px;
+}
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.shopify-chip { color: #00ff97; background: rgba(0,255,151,0.08); border-color: rgba(0,255,151,0.2); }
+
+/* SCORE GRID */
+.scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.score-block {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 1.5rem; position: relative; overflow: hidden;
+}
+.score-block::before { content: ''; position: absolute; inset: 0; opacity: 0.04; border-radius: inherit; }
+.score-block.danger::before { background: var(--danger); }
+.score-block.warn::before { background: var(--warn); }
+.score-block.ok::before { background: var(--ok); }
+.score-label { font-family: 'DM Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem; }
+.score-number { font-family: 'Barlow', sans-serif; font-size: 56px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; margin-bottom: 4px; }
+.score-number.danger { color: var(--danger); }
+.score-number.warn { color: var(--warn); }
+.score-number.ok { color: var(--ok); }
+.score-grade { font-size: 13px; color: var(--muted); }
+
+/* ENGINE STATUS */
+.engines-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+.engine-card {
+  flex: 1; min-width: 120px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.engine-name { font-family: 'DM Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.7); margin-bottom: 5px; }
+.engine-status { font-size: 13px; font-weight: 500; }
+.es-danger { color: var(--danger); }
+.es-warn { color: var(--warn); }
+.es-ok { color: var(--ok); }
+
+/* BARS */
+.bar-row { margin-bottom: 10px; }
+.bar-lbl { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 5px; }
+.bar-track { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+.bf-danger { background: var(--danger); }
+.bf-warn { background: var(--warn); }
+.bf-ok { background: var(--ok); }
+.bf-accent { background: var(--accent); }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+/* SECTIONS */
+.section { margin-bottom: 2rem; }
+.section-label { font-family: 'DM Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); margin-bottom: 0.75rem; }
+
+/* COLORS */
+.color-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.color-swatch { width: 42px; height: 42px; border-radius: 8px; border: 1px solid var(--border); position: relative; cursor: default; }
+.color-swatch:hover::after {
+  content: attr(data-hex); position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text);
+  background: var(--surface2); padding: 2px 6px; border-radius: 4px; white-space: nowrap; z-index: 10;
+}
+
+/* IMAGE GRID */
+.image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.image-thumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface2); }
+.image-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* OG CARD */
+.og-card { border: 1px solid var(--border2); border-radius: 12px; overflow: hidden; background: var(--surface2); }
+.og-card-img { height: 160px; background: var(--surface); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.og-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.og-missing-label { font-size: 12px; color: var(--danger); text-align: center; padding: 1rem; }
+.og-card-body { padding: 1rem; }
+.og-card-domain { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.og-card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.og-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+/* PRODUCT GRID */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.product-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.product-card-img { aspect-ratio: 1; overflow: hidden; background: var(--surface); width: 100%; }
+.product-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-card-body { padding: 10px; }
+.product-card-name { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.product-card-price { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 6px; }
+.product-card-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.pb { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+.pb-ok { background: rgba(0,255,151,0.12); color: var(--ok); }
+.pb-bad { background: rgba(255,87,87,0.15); color: var(--danger); }
+
+/* TWO COL */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) {
+  .two-col, .scores-grid { grid-template-columns: 1fr; }
+  .verdict-hero { flex-direction: column; gap: 1.5rem; }
+  .verdict-score { font-size: 72px; }
+  .verdict-headline { font-size: 17px; }
+  .engine-big-row { flex-direction: column; gap: 1rem; }
+  .engine-big-right { text-align: left; width: 100%; min-width: unset; }
+  .engine-big-name { font-size: 20px; }
+  .mid-cta { flex-direction: column; gap: 1rem; text-align: center; }
+  .mid-cta-left { flex-direction: column; gap: 0.75rem; align-items: center; }
+  .cta-inputs { flex-direction: column; }
+  .cta-features { max-width: 100%; }
+  .results { padding: 0 1rem 4rem; }
+  .hero { padding: 0 1.25rem; }
+  .audit-form { flex-direction: column; gap: 8px; }
+  .audit-form input { width: 100%; }
+  .audit-btn { width: 100%; text-align: center; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .image-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  .engines-row { flex-direction: column; }
+  .verdict-stats { gap: 1rem; }
+  .ai-pills { gap: 5px; }
+  .ai-pill { font-size: 10px; padding: 2px 10px; }
+  .cta-section { padding: 2rem 1.25rem; }
+  .scan-inner { padding: 1rem; }
+  .scan-radar { width: 140px; height: 140px; }
+}
+
+/* ISSUES */
+.issues-list { display: flex; flex-direction: column; gap: 8px; }
+.issue-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.issue-icon {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; margin-top: 1px;
+}
+.ii-danger { background: rgba(255,87,87,0.18); color: var(--danger); }
+.ii-warn { background: rgba(255,179,71,0.18); color: var(--warn); }
+.issue-body { flex: 1; }
+.issue-headline { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 4px; letter-spacing: -0.01em; }
+.issue-why { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.55; margin-bottom: 6px; }
+.issue-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.itag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.itag-ai { background: rgba(0,255,151,0.1); color: var(--accent); }
+.itag-seo { background: rgba(184,169,255,0.15); color: var(--purple); }
+.itag-crit { background: rgba(255,87,87,0.15); color: var(--danger); }
+.itag-warn { background: rgba(255,179,71,0.12); color: var(--warn); }
+
+/* CTA */
+.cta-section {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 2.5rem; text-align: center;
+  margin-top: 2rem; position: relative; overflow: hidden;
+}
+.cta-section::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 300px;
+  background: radial-gradient(circle, rgba(0,255,151,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-section h2 { font-family: 'Barlow', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 0.75rem; line-height: 1.1; color: var(--text); }
+.cta-section h2 em { font-style: normal; color: var(--accent); }
+.cta-section p { color: rgba(255,255,255,0.75); font-size: 16px; max-width: 420px; margin: 0 auto 2rem; line-height: 1.7; }
+.cta-inputs { display: flex; gap: 10px; max-width: 460px; margin: 0 auto 10px; }
+.cta-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 11px 14px; color: var(--text);
+  font-family: 'Barlow', sans-serif; font-size: 14px; outline: none;
+}
+.cta-input:focus { border-color: var(--accent); }
+.cta-submit {
+  width: 100%; max-width: 460px; display: block; margin: 0 auto;
+  background: var(--accent); color: #000; border: none; border-radius: 6px;
+  padding: 13px 24px; font-size: 15px; font-weight: 800; cursor: pointer;
+  font-family: 'Barlow', sans-serif; letter-spacing: -0.02em;
+  transition: background 0.15s, transform 0.1s;
+}
+.cta-submit:hover { background: #00e085; transform: translateY(-1px); }
+.cta-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+.cta-book { color: var(--accent); text-decoration: none; font-size: 13px; display: inline-block; margin-top: 12px; opacity: 0.8; }
+.cta-book:hover { opacity: 1; }
+
+.no-data { font-size: 13px; color: var(--muted); font-style: italic; }
+.powered { text-align: center; font-size: 11px; color: var(--muted); margin-top: 2rem; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; }
+.powered a { color: var(--muted); text-decoration: none; }
+.powered a:hover { color: var(--accent); }
+
+body.has-results header { display: none; }
+body.has-results .hero { display: none; }
+
+.report-header {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2.5rem 0 2rem; gap: 0.75rem; text-align: center;
+}
+.report-header-sub {
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.75); font-weight: 500;
+}
+.try-another { text-align: center; padding: 2rem 0 1rem; }
+.try-another-btn {
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 12px; padding: 10px 24px; border-radius: 6px;
+  cursor: pointer; transition: border-color 0.15s, color 0.15s; letter-spacing: 0.04em;
+}
+.try-another-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* VERDICT HERO */
+.verdict-hero {
+  display: flex; gap: 2rem; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 2rem; margin-bottom: 2rem;
+}
+.verdict-score-wrap { text-align: center; flex-shrink: 0; }
+.verdict-score-label { font-family: 'DM Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.verdict-score { font-family: 'Barlow', sans-serif; font-weight: 800; font-size: 88px; line-height: 1; letter-spacing: -0.05em; }
+.verdict-score.danger { color: var(--danger); }
+.verdict-score.warn   { color: var(--warn); }
+.verdict-score.ok     { color: var(--ok); }
+.verdict-denom { font-size: 30px; color: var(--muted); font-weight: 400; }
+.verdict-text { flex: 1; }
+.verdict-headline { font-family: 'Barlow', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); line-height: 1.25; margin-bottom: 0.6rem; }
+.verdict-sub { font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.65; margin-bottom: 1.25rem; }
+.verdict-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.vstat-num { font-family: 'Barlow', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.vstat-label { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+.danger-text { color: var(--danger); }
+.warn-text { color: var(--warn); }
+
+
+/* BIG SECTION LABELS */
+.big-section-label {
+  font-family: 'Barlow', sans-serif; font-weight: 800;
+  font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 6px;
+}
+.big-section-sub {
+  font-size: 16px; color: rgba(255,255,255,0.75);
+  margin-bottom: 1.5rem; font-weight: 400;
+}
+
+/* BIG ENGINE ROWS */
+.engine-big-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 2rem; padding: 1.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.engine-big-row:last-child { border-bottom: none; margin-bottom: 2rem; }
+.engine-big-left { flex: 1; }
+.engine-big-name {
+  font-family: 'Barlow', sans-serif; font-size: 24px; font-weight: 800;
+  letter-spacing: -0.03em; color: var(--text); margin-bottom: 8px; line-height: 1;
+}
+.engine-big-desc { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; max-width: 480px; }
+.engine-big-right { flex-shrink: 0; text-align: right; min-width: 180px; }
+.engine-big-status { font-size: 14px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; }
+.engine-big-bar-track { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+.engine-big-bar-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+.engine-big-pct-num { font-family: 'Barlow', sans-serif; font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; margin-bottom: 4px; }
+.engine-big-pct-num.danger { color: var(--danger); }
+.engine-big-pct-num.warn { color: var(--warn); }
+.engine-big-pct-unit { font-size: 36px; font-weight: 700; vertical-align: top; margin-top: 6px; display: inline-block; }
+
+
+.result-block { }
+
+/* REVEAL ANIMATIONS */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.reveal { opacity: 0; }
+.reveal.in {
+  animation: reveal-up 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.reveal-score.in {
+  animation: count-up 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+/* Stagger delays */
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.15s; }
+.d3 { animation-delay: 0.25s; }
+.d4 { animation-delay: 0.35s; }
+.d5 { animation-delay: 0.45s; }
+.d6 { animation-delay: 0.55s; }
+.d7 { animation-delay: 0.65s; }
+.d8 { animation-delay: 0.75s; }
+.d9 { animation-delay: 0.85s; }
+
+/* MID-PAGE CTA */
+.mid-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+  background: var(--surface); border: 1px solid var(--accent-border);
+  border-radius: 12px; padding: 1.5rem 2rem; margin: 2rem 0;
+  flex-wrap: wrap;
+}
+.mid-cta-left { display: flex; align-items: center; gap: 1.25rem; }
+.mid-cta-score { font-family: 'Barlow', sans-serif; font-size: 52px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; flex-shrink: 0; }
+.mid-cta-score.danger { color: var(--danger); }
+.mid-cta-score.warn   { color: var(--warn); }
+.mid-cta-score.ok     { color: var(--ok); }
+.mid-cta-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; margin-bottom: 3px; }
+.mid-cta-sub { font-size: 13px; color: rgba(255,255,255,0.5); }
+.mid-cta-btn {
+  background: var(--accent); color: #000; border: none;
+  border-radius: 6px; padding: 12px 24px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; white-space: nowrap; letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.1s;
+}
+.mid-cta-btn:hover { background: #00e085; transform: translateY(-1px); }
+
+/* CTA ENHANCEMENTS */
+.cta-badge {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 11px;
+  letter-spacing: 0.1em; color: #000; background: var(--accent);
+  padding: 4px 14px; border-radius: 99px; margin-bottom: 1.25rem; font-weight: 700;
+}
+.cta-features {
+  display: flex; flex-direction: column; gap: 10px;
+  max-width: 380px; margin: 0 auto 1.75rem; text-align: left;
+  align-items: center;
+}
+.cta-feat { font-size: 14px; color: rgba(255,255,255,0.75); display: flex; align-items: center; gap: 10px; justify-content: flex-start; }
+.cta-feat-icon { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+.issues-header { margin-bottom: 0.25rem; }
+
+/* ASSETS TOGGLE */
+.assets-toggle-wrap { margin: 0 0 2rem; }
+.assets-toggle-btn {
+  background: transparent; border: 1px solid var(--border2);
+  border-radius: 6px; padding: 10px 18px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--muted); cursor: pointer; width: 100%;
+  text-align: left; transition: border-color 0.15s, color 0.15s;
+  letter-spacing: 0.02em;
+}
+.assets-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* SHARE BUTTON */
+.share-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.share-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 12px; padding: 8px 18px; border-radius: 6px;
+  cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  letter-spacing: 0.03em; white-space: nowrap;
+}
+.share-btn:hover { border-color: var(--accent); color: var(--accent); }
+.share-btn.copied { border-color: var(--accent); color: var(--accent); }
+.share-toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--accent); color: #000;
+  font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700;
+  padding: 10px 24px; border-radius: 8px;
+  opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none; z-index: 999; white-space: nowrap;
+}
+.share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* SHARED REPORT GATE */
+.shared-gate {
+  background: var(--surface); border: 1px solid var(--accent-border);
+  border-radius: 14px; padding: 2rem; margin: 2rem 0;
+  text-align: center; position: relative; overflow: hidden;
+}
+.shared-gate::before {
+  content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 200px;
+  background: radial-gradient(circle, rgba(0,255,151,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+.shared-gate-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: #000; background: var(--accent);
+  display: inline-block; padding: 3px 12px; border-radius: 99px;
+  margin-bottom: 1rem; font-weight: 700;
+}
+.shared-gate h3 {
+  font-family: 'Barlow', sans-serif; font-size: 22px; font-weight: 800;
+  letter-spacing: -0.03em; color: var(--text); margin-bottom: 0.5rem; line-height: 1.2;
+}
+.shared-gate p { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 1.25rem; }
+.shared-gate-form {
+  display: flex; gap: 8px; max-width: 400px; margin: 0 auto;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 5px;
+}
+.shared-gate-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'DM Mono', monospace;
+  font-size: 12px; padding: 7px 10px;
+}
+.shared-gate-form input::placeholder { color: var(--muted); }
+.shared-gate-form button {
+  background: var(--accent); color: #000; border: none; border-radius: 5px;
+  padding: 8px 18px; font-family: 'Barlow', sans-serif;
+  font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+
+/* BLURRED ISSUES */
+.issues-blurred { position: relative; }
+.issues-blur-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(13,13,13,0.97) 40%);
+  border-radius: 10px; pointer-events: none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="share-toast" id="shareToast">Link copied to clipboard</div>
+<header>
+  <div class="logo-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="26" viewBox="0 0 3162.208309618669 909.2179303030312">
+      <g transform="scale(8.11041548093341) translate(10, 10)">
+        <defs id="SvgjsDefs1094"></defs>
+        <g id="SvgjsG1095" featureKey="5TMTKC-0" transform="matrix(1.0466489028630275,0,0,1.0466489028630275,-6.279812066960743,-6.279893417178165)" fill="#ffffff">
+          <g xmlns="http://www.w3.org/2000/svg" transform="translate(0,-952.36218)">
+            <path d="m 13.540789,1013.168 c -4.1612604,0 -7.5408665,3.3922 -7.5408665,7.5693 0,4.1771 3.3796061,7.605 7.5408665,7.605 0.813543,0 1.613976,-0.1361 2.383228,-0.3928 12.281102,18.8997 36.649842,23.2608 54.493227,13.032 0.521221,-0.2991 0.724607,-1.0475 0.426614,-1.571 -0.297992,-0.5234 -1.043503,-0.7275 -1.565078,-0.4284 -16.772953,9.6153 -39.67122,5.6292 -51.327282,-12.1037 1.894251,-1.3812 3.130157,-3.6195 3.130157,-6.1411 0,-4.1771 -3.379252,-7.5693 -7.540866,-7.5693 z" fill="#ffffff"/>
+            <path d="m 70.417244,970.57299 c -0.951023,0.12132 -1.237323,1.69026 -0.391181,2.14225 13.429842,8.21899 20.928543,24.30182 17.64248,40.55986 -0.392953,-0.067 -0.80185,-0.107 -1.209331,-0.107 -4.161259,0 -7.540866,3.3922 -7.540866,7.5692 0,4.1771 3.379607,7.605 7.540866,7.605 4.16126,0 7.540866,-3.4279 7.540866,-7.605 0,-2.9516 -1.686968,-5.51 -4.161614,-6.748 3.607441,-17.29107 -4.331338,-34.48188 -18.638503,-43.23773 -0.189921,-0.12122 -0.415984,-0.18423 -0.64063,-0.17852 -0.04784,-0.003 -0.09425,-0.003 -0.142087,0 z" fill="#ffffff"/>
+            <path d="m 50.000001,958.36218 c -4.012441,0 -7.27441,3.16987 -7.505079,7.14083 -17.197086,3.19362 -29.727637,16.85266 -32.5821254,33.06201 a 1.1383515,1.1426463 0 1 0 2.2407874,0.39275 c 2.681221,-15.22486 14.388307,-28.07084 30.518858,-31.1697 0.826653,3.28539 3.802677,5.71266 7.327559,5.71266 4.161259,0 7.540866,-3.39219 7.540866,-7.56928 0,-4.17708 -3.379607,-7.56927 -7.540866,-7.56927 z" fill="#ffffff"/>
+          </g>
+        </g>
+        <g id="SvgjsG1096" featureKey="7UBp9i-0" transform="matrix(2.781435636606215,0,0,2.781435636606215,111.83311435253162,11.314013949983305)" fill="#ffffff">
+          <path d="M12.76 20 l-1.6 -3.72 l-7.94 0 l-1.6 3.72 l-1.56 0 l6.28 -14.58 l1.74 0 l6.3 14.58 l-1.62 0 z M10.58 14.88 l-3.4 -7.88 l-3.38 7.88 l6.78 0 z M21.24 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M33.32 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M54.26 12.68 c0 1.38 -0.32 2.64 -0.94 3.78 c-0.64 1.14 -1.52 2.04 -2.64 2.7 c-1.14 0.66 -2.38 1 -3.78 1 c-1.02 0 -1.98 -0.2 -2.9 -0.58 c-0.9 -0.38 -1.68 -0.9 -2.32 -1.58 c-0.64 -0.64 -1.14 -1.42 -1.52 -2.34 c-0.36 -0.92 -0.56 -1.88 -0.56 -2.9 c0 -1.38 0.32 -2.64 0.96 -3.78 c0.62 -1.14 1.5 -2.06 2.64 -2.72 c1.12 -0.66 2.38 -0.98 3.76 -0.98 c1.02 0 1.98 0.18 2.9 0.56 c0.9 0.4 1.68 0.92 2.32 1.56 c0.64 0.68 1.16 1.46 1.52 2.36 c0.38 0.92 0.56 1.88 0.56 2.92 z M52.68 12.76 c0 -1.64 -0.6 -3.16 -1.6 -4.26 s-2.5 -1.8 -4.18 -1.8 c-1.08 0 -2.06 0.28 -2.94 0.8 c-0.88 0.56 -1.56 1.28 -2.04 2.18 c-0.48 0.92 -0.72 1.92 -0.72 3 c0 1.62 0.6 3.16 1.6 4.24 c1 1.1 2.5 1.8 4.16 1.8 c1.08 0 2.06 -0.28 2.94 -0.82 c0.9 -0.52 1.58 -1.26 2.06 -2.16 s0.72 -1.9 0.72 -2.98 z M70.3 5.42 l2.2 0 l0 14.58 l-1.52 0 l0 -12.5 l0 0 l-5.42 12.5 l-1.38 0 l-5.38 -12.4 l0 0 l0 12.4 l-1.52 0 l0 -14.58 l2.18 0 l5.44 12.5 z M76.56 20 l0 -14.58 l1.54 0 l0 14.58 l-1.54 0 z M83.68 20 l-1.54 0 l0 -14.58 l1.54 0 l0 6.44 l0.1 0 l6.54 -6.44 l2.12 0 l-7.14 6.98 l7.48 7.6 l-2.16 0 l-6.84 -7.02 l-0.1 0 l0 7.02 z"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-logo">
+    <a href="https://attomik.co" target="_blank" rel="noopener" style="display:flex;align-items:center;">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 3162.208309618669 909.2179303030312">
+      <g transform="scale(8.11041548093341) translate(10, 10)">
+        <g transform="matrix(1.0466489028630275,0,0,1.0466489028630275,-6.279812066960743,-6.279893417178165)" fill="#ffffff">
+          <g transform="translate(0,-952.36218)">
+            <path d="m 13.540789,1013.168 c -4.1612604,0 -7.5408665,3.3922 -7.5408665,7.5693 0,4.1771 3.3796061,7.605 7.5408665,7.605 0.813543,0 1.613976,-0.1361 2.383228,-0.3928 12.281102,18.8997 36.649842,23.2608 54.493227,13.032 0.521221,-0.2991 0.724607,-1.0475 0.426614,-1.571 -0.297992,-0.5234 -1.043503,-0.7275 -1.565078,-0.4284 -16.772953,9.6153 -39.67122,5.6292 -51.327282,-12.1037 1.894251,-1.3812 3.130157,-3.6195 3.130157,-6.1411 0,-4.1771 -3.379252,-7.5693 -7.540866,-7.5693 z" fill="#ffffff"/>
+            <path d="m 70.417244,970.57299 c -0.951023,0.12132 -1.237323,1.69026 -0.391181,2.14225 13.429842,8.21899 20.928543,24.30182 17.64248,40.55986 -0.392953,-0.067 -0.80185,-0.107 -1.209331,-0.107 -4.161259,0 -7.540866,3.3922 -7.540866,7.5692 0,4.1771 3.379607,7.605 7.540866,7.605 4.16126,0 7.540866,-3.4279 7.540866,-7.605 0,-2.9516 -1.686968,-5.51 -4.161614,-6.748 3.607441,-17.29107 -4.331338,-34.48188 -18.638503,-43.23773 -0.189921,-0.12122 -0.415984,-0.18423 -0.64063,-0.17852 -0.04784,-0.003 -0.09425,-0.003 -0.142087,0 z" fill="#ffffff"/>
+            <path d="m 50.000001,958.36218 c -4.012441,0 -7.27441,3.16987 -7.505079,7.14083 -17.197086,3.19362 -29.727637,16.85266 -32.5821254,33.06201 a 1.1383515,1.1426463 0 1 0 2.2407874,0.39275 c 2.681221,-15.22486 14.388307,-28.07084 30.518858,-31.1697 0.826653,3.28539 3.802677,5.71266 7.327559,5.71266 4.161259,0 7.540866,-3.39219 7.540866,-7.56928 0,-4.17708 -3.379607,-7.56927 -7.540866,-7.56927 z" fill="#ffffff"/>
+          </g>
+        </g>
+        <g transform="matrix(2.781435636606215,0,0,2.781435636606215,111.83311435253162,11.314013949983305)" fill="#ffffff">
+          <path d="M12.76 20 l-1.6 -3.72 l-7.94 0 l-1.6 3.72 l-1.56 0 l6.28 -14.58 l1.74 0 l6.3 14.58 l-1.62 0 z M10.58 14.88 l-3.4 -7.88 l-3.38 7.88 l6.78 0 z M21.24 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M33.32 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M54.26 12.68 c0 1.38 -0.32 2.64 -0.94 3.78 c-0.64 1.14 -1.52 2.04 -2.64 2.7 c-1.14 0.66 -2.38 1 -3.78 1 c-1.02 0 -1.98 -0.2 -2.9 -0.58 c-0.9 -0.38 -1.68 -0.9 -2.32 -1.58 c-0.64 -0.64 -1.14 -1.42 -1.52 -2.34 c-0.36 -0.92 -0.56 -1.88 -0.56 -2.9 c0 -1.38 0.32 -2.64 0.96 -3.78 c0.62 -1.14 1.5 -2.06 2.64 -2.72 c1.12 -0.66 2.38 -0.98 3.76 -0.98 c1.02 0 1.98 0.18 2.9 0.56 c0.9 0.4 1.68 0.92 2.32 1.56 c0.64 0.68 1.16 1.46 1.52 2.36 c0.38 0.92 0.56 1.88 0.56 2.92 z M52.68 12.76 c0 -1.64 -0.6 -3.16 -1.6 -4.26 s-2.5 -1.8 -4.18 -1.8 c-1.08 0 -2.06 0.28 -2.94 0.8 c-0.88 0.56 -1.56 1.28 -2.04 2.18 c-0.48 0.92 -0.72 1.92 -0.72 3 c0 1.62 0.6 3.16 1.6 4.24 c1 1.1 2.5 1.8 4.16 1.8 c1.08 0 2.06 -0.28 2.94 -0.82 c0.9 -0.52 1.58 -1.26 2.06 -2.16 s0.72 -1.9 0.72 -2.98 z M70.3 5.42 l2.2 0 l0 14.58 l-1.52 0 l0 -12.5 l0 0 l-5.42 12.5 l-1.38 0 l-5.38 -12.4 l0 0 l0 12.4 l-1.52 0 l0 -14.58 l2.18 0 l5.44 12.5 z M76.56 20 l0 -14.58 l1.54 0 l0 14.58 l-1.54 0 z M83.68 20 l-1.54 0 l0 -14.58 l1.54 0 l0 6.44 l0.1 0 l6.54 -6.44 l2.12 0 l-7.14 6.98 l7.48 7.6 l-2.16 0 l-6.84 -7.02 l-0.1 0 l0 7.02 z"/>
+        </g>
+      </g>
+    </svg>
+    </a>
+  </div>
+  <div class="hero-tag"><span class="tag-dot"></span>AI Search Visibility Audit</div>
+  <h1>When someone asks AI<br>for the best in your category,<br><em>do you show up?</em></h1>
+  <p class="hero-sub">ChatGPT, Perplexity, and Google AI Overviews are the new search. Most brands are invisible to them — and don't even know it.</p>
+  <div class="ai-pills">
+    <span class="ai-pill">ChatGPT</span>
+    <span class="ai-pill">Perplexity</span>
+    <span class="ai-pill">Google AI Overviews</span>
+    <span class="ai-pill">Claude</span>
+    <span class="ai-pill">Copilot</span>
+  </div>
+  <div class="audit-form">
+    <input type="text" id="urlInput" placeholder="https://yourbrand.com" />
+    <button class="audit-btn" id="auditBtn">Check my AI visibility →</button>
+  </div>
+  <div class="hero-attomik-link">
+    A free tool by <a href="https://attomik.co" target="_blank">Attomik</a> — the ecommerce growth partner for CPG brands.
+  </div>
+</div>
+
+<div class="scan-overlay" id="scanOverlay">
+  <div class="scan-inner">
+    <div class="scan-radar">
+      <div class="scan-ring r1"></div>
+      <div class="scan-ring r2"></div>
+      <div class="scan-ring r3"></div>
+      <div class="scan-sweep"></div>
+      <div class="scan-center"></div>
+    </div>
+    <div class="scan-url" id="scanUrl"></div>
+    <div class="scan-steps" id="scanSteps"></div>
+    <div class="scan-status" id="scanStatus">Initializing scan...</div>
+  </div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+const PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+const SCAN_STEPS = [
+  { label: 'Connecting to target', sub: 'Routing through proxy network' },
+  { label: 'Reading page structure', sub: 'Parsing HTML, CSS & metadata' },
+  { label: 'Detecting platform', sub: 'Shopify, custom CMS, frameworks' },
+  { label: 'Extracting brand identity', sub: 'Colors, images, OG assets' },
+  { label: 'Running AI visibility scan', sub: 'Schema, content signals, E-E-A-T' },
+];
+
+let stepTimer = null;
+let currentVisualStep = 0;
+
+function showOverlay(url) {
+  currentVisualStep = 0;
+  let dom = url;
+  try { dom = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace(/^www\./, ''); } catch { dom = url.replace(/https?:\/\//,'').split('/')[0]; }
+  document.getElementById('scanUrl').textContent = dom;
+
+  document.getElementById('scanSteps').innerHTML = SCAN_STEPS.map((s, i) => `
+    <div class="scan-step" id="step-${i}">
+      <div class="scan-step-icon" id="step-icon-${i}">
+        <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      </div>
+      <div class="scan-step-text">
+        <div class="scan-step-label">${s.label}</div>
+        <div class="scan-step-sub">${s.sub}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('scanOverlay').classList.add('visible');
+  clearInterval(stepTimer);
+
+  // Wait for paint then start
+  setTimeout(() => {
+    activateStep(0);
+    stepTimer = setInterval(() => {
+      completeStep(currentVisualStep);
+      currentVisualStep++;
+      if (currentVisualStep < SCAN_STEPS.length) {
+        activateStep(currentVisualStep);
+      } else {
+        clearInterval(stepTimer);
+      }
+    }, 1400);
+  }, 150);
+}
+
+function activateStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  const icon = document.getElementById(`step-icon-${i}`);
+  if (!el || !icon) return;
+  el.className = 'scan-step active';
+  icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#00ff97" stroke-width="1.5"/></svg>`;
+  if (SCAN_STEPS[i]) document.getElementById('scanStatus').textContent = SCAN_STEPS[i].sub;
+}
+
+function completeStep(i) {
+  const el = document.getElementById(`step-${i}`);
+  const icon = document.getElementById(`step-icon-${i}`);
+  if (!el || !icon) return;
+  el.className = 'scan-step done';
+  icon.innerHTML = `<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#00ff97"/><path d="M3 5.2l1.3 1.3L7 3.5" stroke="#000" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function setStatus(m) { /* visual steps run on their own timer */ }
+
+function clearStatus() {
+  clearInterval(stepTimer);
+  for (let i = 0; i < SCAN_STEPS.length; i++) completeStep(i);
+  document.getElementById('scanStatus').textContent = 'Analysis complete';
+  setTimeout(() => {
+    document.getElementById('scanOverlay').classList.remove('visible');
+    currentVisualStep = 0;
+  }, 800);
+}
+
+function hideOverlayWithError(msg) {
+  clearInterval(stepTimer);
+  const overlay = document.getElementById('scanOverlay');
+  const statusEl = document.getElementById('scanStatus');
+  if (statusEl) statusEl.textContent = msg;
+
+  // Overlay may have been morphed — just show error message in center
+  const inner = overlay ? overlay.querySelector('.scan-inner') : null;
+  if (inner) {
+    inner.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;width:100%;height:100%;';
+    inner.innerHTML =
+      '<div style="font-family:\'DM Mono\',monospace;font-size:13px;color:#ef4444;text-align:center;padding:2rem;">' + msg + '</div>' +
+      '<button onclick="document.getElementById(\'scanOverlay\').classList.remove(\'visible\')" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#fff;font-family:\'DM Mono\',monospace;font-size:12px;padding:8px 20px;border-radius:6px;cursor:pointer;">Try again</button>';
+  }
+
+  setTimeout(() => {
+    if (overlay) {
+      overlay.classList.remove('visible');
+      overlay.style.cssText = '';
+    }
+    currentVisualStep = 0;
+  }, 3000);
+}
+
+async function fetchPage(url) {
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      if (text && text.length > 200) return text;
+    } catch {}
+  }
+  return null;
+}
+
+async function fetchJSON(url) {
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      return await r.json();
+    } catch {}
+  }
+  return null;
+}
+
+function parseHTML(html) { return (new DOMParser()).parseFromString(html, 'text/html'); }
+
+function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } }
+function getOrigin(url) { try { return new URL(url).origin; } catch { return ''; } }
+
+function absUrl(src, base) {
+  if (!src) return null;
+  if (src.startsWith('http')) return src;
+  if (src.startsWith('//')) return 'https:' + src;
+  try { return new URL(src, base).href; } catch { return null; }
+}
+
+function extractColorsFromCSS(html, doc) {
+  // 1. Collect all CSS text from <style> blocks and style="" attributes
+  const styleBlocks = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  const inlineStyles = [...doc.querySelectorAll('[style]')].map(el => el.getAttribute('style')).join('\n');
+  const cssText = styleBlocks + '\n' + inlineStyles;
+
+  // 2. Find CSS custom property definitions and their values
+  const varMap = {};
+  const varDefRe = /--([\w-]*(?:primary|secondary|accent|brand|color|bg|background)[\w-]*)\s*:\s*(#[0-9a-fA-F]{3,6})/gi;
+  let vm;
+  while ((vm = varDefRe.exec(cssText)) !== null) {
+    varMap['--' + vm[1].toLowerCase()] = vm[2];
+  }
+
+  // 3. Count hex color occurrences
+  const counts = {};
+  const hexRe = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+  let m;
+  while ((m = hexRe.exec(cssText)) !== null) {
+    let hex = m[1];
+    if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+    hex = '#' + hex.toLowerCase();
+
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+
+    // Skip near-white, near-black, near-gray
+    if (r > 240 && g > 240 && b > 240) continue;
+    if (r < 35  && g < 35  && b < 35)  continue;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    if (max - min < 20) continue; // too gray
+
+    counts[hex] = (counts[hex] || 0) + 1;
+  }
+
+  // 4. Boost colors that appear as CSS custom property values
+  const boostKeys = ['primary','secondary','accent','brand','color','bg','background'];
+  for (const [varName, hex] of Object.entries(varMap)) {
+    const norm = '#' + (hex.length === 4
+      ? hex.slice(1).split('').map(c=>c+c).join('')
+      : hex.slice(1)).toLowerCase();
+    if (counts[norm] !== undefined) {
+      const isKeyVar = boostKeys.some(k => varName.includes(k));
+      counts[norm] = (counts[norm] || 0) + (isKeyVar ? 100 : 20);
+    }
+  }
+
+  // 5. Sort by frequency and return top 3
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([hex]) => hex);
+}
+
+function analyze(doc, url, shopify) {
+  const issues = [];
+  let aiScore = 100, seoScore = 100;
+  const org = getOrigin(url);
+
+  // Title
+  const titleEl = doc.querySelector('title');
+  const titleTxt = titleEl ? titleEl.textContent.trim() : '';
+  if (!titleTxt) {
+    issues.push({ sev: 'danger', headline: 'No page title — AI has nothing to cite you by', why: 'AI assistants pull your brand name and category from the title tag first. Without one, your brand is anonymous.', tags: ['AI critical', 'SEO critical'] });
+    aiScore -= 15; seoScore -= 18;
+  } else if (titleTxt.length < 30) {
+    issues.push({ sev: 'warn', headline: `Title too short for AI citation (${titleTxt.length} chars)`, why: 'Not enough context for AI to confidently describe your brand. Aim for 50–60 characters with category and brand name.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 8; seoScore -= 8;
+  } else if (titleTxt.length > 65) {
+    issues.push({ sev: 'warn', headline: `Title too long — truncated in search results (${titleTxt.length} chars)`, why: 'Gets cut off in Google results and provides diluted signal to AI crawlers.', tags: ['SEO'] });
+    seoScore -= 5;
+  }
+
+  // Meta description
+  const metaEl = doc.querySelector('meta[name="description"]');
+  const metaTxt = metaEl ? (metaEl.getAttribute('content') || '').trim() : '';
+  if (!metaTxt) {
+    issues.push({ sev: 'danger', headline: 'No meta description — AI can\'t summarize what you do', why: 'AI models use the meta description as a shortcut to understand your brand. Missing it means AI guesses — or skips you entirely.', tags: ['AI critical', 'SEO critical'] });
+    aiScore -= 14; seoScore -= 12;
+  } else if (metaTxt.length < 80) {
+    issues.push({ sev: 'warn', headline: `Meta description too thin (${metaTxt.length} chars)`, why: 'Too short for AI to extract a meaningful brand summary. Expand to 130–160 characters with clear value prop.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 7; seoScore -= 6;
+  }
+
+  // H1
+  const h1s = doc.querySelectorAll('h1');
+  if (!h1s.length) {
+    issues.push({ sev: 'danger', headline: 'No H1 heading — AI can\'t identify your page topic', why: 'H1 tags tell AI what a page is about. Without one, AI has no structured signal to categorize and recommend your content.', tags: ['AI critical', 'SEO critical'] });
+    aiScore -= 12; seoScore -= 14;
+  } else if (h1s.length > 1) {
+    issues.push({ sev: 'warn', headline: `${h1s.length} H1 tags — sends conflicting topic signals to AI`, why: 'Multiple H1s confuse AI models about what the page is actually about. They may skip it for cleaner competitors.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 6; seoScore -= 7;
+  }
+
+  // Structured data
+  const schemas = doc.querySelectorAll('script[type="application/ld+json"]');
+  if (!schemas.length) {
+    issues.push({ sev: 'danger', headline: 'No structured data — AI has no brand entity to reference', why: 'Schema.org markup is how AI models build a knowledge graph of your brand. Without it you\'re unstructured noise — impossible to cite with confidence.', tags: ['AI critical', 'SEO'] });
+    aiScore -= 25; seoScore -= 8;
+  } else {
+    let hasOrg = false, hasProd = false;
+    schemas.forEach(s => { try { const j = JSON.parse(s.textContent); if (['Organization','Brand'].includes(j['@type'])) hasOrg = true; if (['Product','ItemList'].includes(j['@type'])) hasProd = true; } catch {} });
+    if (!hasOrg) {
+      issues.push({ sev: 'warn', headline: 'No Organization/Brand schema — AI doesn\'t know who you are', why: 'Without Organization markup, AI can\'t connect your website to a real-world brand entity. You\'re just a collection of web pages.', tags: ['AI critical'] });
+      aiScore -= 14;
+    }
+    if (!hasProd) {
+      issues.push({ sev: 'warn', headline: 'No Product schema — AI can\'t recommend your products', why: 'AI shopping assistants rely on Product schema to surface items in recommendations. Your products are invisible.', tags: ['AI critical'] });
+      aiScore -= 10;
+    }
+  }
+
+  // Content depth
+  const words = (doc.body ? doc.body.innerText : '').trim().split(/\s+/).filter(Boolean).length;
+  if (words < 300) {
+    issues.push({ sev: 'danger', headline: `Thin content (~${words} words) — not enough for AI to understand you`, why: 'AI models need substantial text to build a confident picture of your brand. Thin pages get skipped for competitors with richer content.', tags: ['AI critical', 'Content'] });
+    aiScore -= 18;
+  } else if (words < 600) {
+    issues.push({ sev: 'warn', headline: `Borderline content depth (~${words} words)`, why: 'More content = more signal for AI. Aim for 600–800+ words on your homepage with clear category language.', tags: ['AI impact', 'Content'] });
+    aiScore -= 8;
+  }
+
+  // FAQ
+  if (!doc.querySelectorAll('[itemtype*="FAQPage"], .faq, #faq, [id*="faq"], [class*="faq"]').length) {
+    issues.push({ sev: 'warn', headline: 'No FAQ content — missing AI\'s favorite signal format', why: 'AI assistants are trained to answer questions. Pages with Q&A content get cited far more often because they match how AI is built.', tags: ['AI impact', 'Content'] });
+    aiScore -= 14;
+  }
+
+  // About page
+  if (!doc.querySelector('a[href*="about"]')) {
+    issues.push({ sev: 'warn', headline: 'No About page — AI can\'t build a brand profile', why: 'AI models construct brand profiles from About pages. Without one, there\'s no narrative for AI to learn who you are and who you serve.', tags: ['AI impact'] });
+    aiScore -= 10;
+  }
+
+  // E-E-A-T
+  if (!doc.querySelector('meta[name="author"], [rel="author"], .author, [class*="author"], [itemtype*="Person"]')) {
+    issues.push({ sev: 'warn', headline: 'No expertise signals — AI discounts faceless brands', why: 'ChatGPT and Google AI weight authority signals heavily. Brands with clear human expertise get recommended; anonymous brands get skipped.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 10;
+  }
+
+  // Open Graph
+  const ogT = doc.querySelector('meta[property="og:title"]');
+  const ogD = doc.querySelector('meta[property="og:description"]');
+  const ogI = doc.querySelector('meta[property="og:image"]');
+  if (!ogT || !ogD || !ogI) {
+    issues.push({ sev: 'warn', headline: `Incomplete Open Graph (${[!ogT&&'title',!ogD&&'description',!ogI&&'image'].filter(Boolean).join(', ')} missing)`, why: 'When AI tools and social platforms preview your brand, they use OG tags. Missing ones mean broken thumbnails and no brand image in AI chat interfaces.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 6; seoScore -= 5;
+  }
+
+  // Alt text
+  const imgs = doc.querySelectorAll('img');
+  let noAlt = 0;
+  imgs.forEach(i => { if (!i.getAttribute('alt') || !i.getAttribute('alt').trim()) noAlt++; });
+  if (noAlt > 0) {
+    issues.push({ sev: 'warn', headline: `${noAlt} image${noAlt>1?'s':''} missing alt text — invisible to AI vision`, why: 'AI models use image alt text to understand visual content. Missing alt means your product images provide zero context to AI.', tags: ['AI impact', 'SEO'] });
+    aiScore -= 5; seoScore -= Math.min(10, noAlt * 2);
+  }
+
+  // Canonical
+  if (!doc.querySelector('link[rel="canonical"]')) {
+    issues.push({ sev: 'warn', headline: 'No canonical tag — duplicate pages split AI authority', why: 'Without canonicals, AI crawlers may index multiple versions of the same page, making your content appear weaker than competitors.', tags: ['SEO'] });
+    seoScore -= 6;
+  }
+
+  // llms.txt
+  issues.push({ sev: 'warn', headline: 'No llms.txt file — AI crawlers have no navigation guide', why: 'llms.txt is an emerging standard that tells AI crawlers which pages matter most. Early adopters are getting a head start on AI indexing.', tags: ['AI impact'] });
+  aiScore -= 8;
+
+  // Shopify product descriptions
+  if (shopify && shopify.products) {
+    const thin = shopify.products.filter(p => !p.body_html || p.body_html.replace(/<[^>]+>/g,'').trim().length < 80).length;
+    if (thin > 0) {
+      issues.push({ sev: 'danger', headline: `${thin} product${thin>1?'s':''} with no description — AI won't recommend them`, why: 'When someone asks AI "what\'s the best X", it recommends products it can describe confidently. Products without copy never get recommended.', tags: ['AI critical', 'Shopify'] });
+      aiScore -= Math.min(20, thin * 4);
+    }
+  }
+
+  return {
+    aiScore: Math.max(0, Math.min(100, Math.round(aiScore))),
+    seoScore: Math.max(0, Math.min(100, Math.round(seoScore))),
+    issues, titleTxt, metaTxt, words,
+    domain: getDomain(url),
+    ogTitle: ogT ? ogT.getAttribute('content') : '',
+    ogDesc: ogD ? ogD.getAttribute('content') : '',
+    ogImage: ogI ? absUrl(ogI.getAttribute('content'), getOrigin(url)) : null,
+  };
+}
+
+function scoreClass(n) { return n >= 70 ? 'ok' : n >= 45 ? 'warn' : 'danger'; }
+function barClass(n) { return n >= 70 ? 'bf-ok' : n >= 45 ? 'bf-warn' : 'bf-danger'; }
+function grade(n) { return n >= 80 ? 'Good' : n >= 60 ? 'Needs work' : n >= 40 ? 'Poor' : 'Critical'; }
+
+function aiVerdict(n) {
+  if (n >= 75) return 'Decent AI visibility — some gaps remain.';
+  if (n >= 50) return 'AI assistants struggle to confidently recommend you.';
+  if (n >= 30) return 'You\'re largely invisible to AI search right now.';
+  return 'AI cannot reliably find, understand, or recommend your brand.';
+}
+
+function engineStatus(ai, seo) {
+  const avg = (ai + seo) / 2;
+  return [
+    { name: 'ChatGPT', label: avg >= 65 ? 'May appear' : 'Unlikely cited', cls: avg >= 65 ? 'es-warn' : 'es-danger' },
+    { name: 'Perplexity', label: ai >= 60 ? 'Indexable' : 'Weak signals', cls: ai >= 60 ? 'es-warn' : 'es-danger' },
+    { name: 'Google AI', label: (seo >= 65 && ai >= 55) ? 'Partial visibility' : 'Low visibility', cls: (seo >= 65 && ai >= 55) ? 'es-warn' : 'es-danger' },
+    { name: 'Copilot', label: avg >= 70 ? 'Partial' : 'Not optimized', cls: avg >= 70 ? 'es-warn' : 'es-danger' },
+  ].map(e => `<div class="engine-card"><div class="engine-name">${e.name}</div><div class="engine-status ${e.cls}">${e.label}</div></div>`).join('');
+}
+
+function buildResults(data, colors, imgUrls, shopify, url, isShopify) {
+  const { aiScore, seoScore, issues, domain, titleTxt, metaTxt, ogTitle, ogDesc, ogImage, words } = data;
+  const combined = Math.round((aiScore * 0.65) + (seoScore * 0.35));
+  const sc = scoreClass(combined), seoC = scoreClass(seoScore), aiC = scoreClass(aiScore);
+  const previewBg = ogImage || imgUrls[0] || '';
+  const critCount = issues.filter(i => i.sev === 'danger').length;
+  const warnCount = issues.filter(i => i.sev === 'warn').length;
+
+  // Verdict messaging based on score
+  const verdictHeadline = combined >= 70
+    ? `${domain} has decent AI visibility — but gaps are costing you.`
+    : combined >= 45
+    ? `${domain} is largely invisible to AI search engines.`
+    : `AI assistants cannot confidently recommend ${domain}.`;
+
+  const verdictSub = combined >= 70
+    ? `You have a foundation, but ${critCount + warnCount} issues are actively blocking AI recommendations. Competitors who fix these will outrank you.`
+    : combined >= 45
+    ? `With ${critCount} critical issues, AI assistants like ChatGPT and Perplexity are skipping your brand entirely — sending customers to competitors instead.`
+    : `This is severe. ${critCount} critical issues mean AI has no way to understand, trust, or recommend your brand. Every AI search in your category is a lost sale.`;
+
+  const chips = [
+    { label: `~${words} words`, color: words > 500 ? '#00ff97' : '#ef4444' },
+    { label: `${critCount} critical issues`, color: '#ef4444' },
+    { label: `${imgUrls.length} images`, color: '#999' },
+    { label: isShopify ? 'Shopify' : 'Non-Shopify', color: isShopify ? '#00ff97' : '#666', shopify: isShopify },
+  ].map(c => `<div class="chip ${c.shopify ? 'shopify-chip' : ''}"><span class="chip-dot" style="background:${c.color}"></span>${c.label}</div>`).join('');
+
+  const swatches = colors.length
+    ? `<div class="color-row">${colors.map(h => `<div class="color-swatch" style="background:${h}" data-hex="${h}" title="${h}"></div>`).join('')}</div>`
+    : '<p class="no-data">No colors extracted</p>';
+
+  const imageGrid = imgUrls.length
+    ? `<div class="image-grid">${imgUrls.slice(0, 20).map(u => `<div class="image-thumb"><img src="${u}" loading="lazy" onerror="this.parentElement.style.display='none'" /></div>`).join('')}</div>`
+    : '<p class="no-data">No images found</p>';
+
+  const ogCard = `<div class="og-card">
+    <div class="og-card-img">
+      ${ogImage
+        ? `<img src="${ogImage}" onerror="this.parentElement.innerHTML='<div class=og-missing-label>OG image failed to load</div>'" />`
+        : '<div class="og-missing-label">No og:image — AI previews will be blank</div>'}
+    </div>
+    <div class="og-card-body">
+      <div class="og-card-domain">${domain}</div>
+      <div class="og-card-title">${ogTitle || '<em style="color:#555">No og:title set</em>'}</div>
+      <div class="og-card-desc">${ogDesc || '<em style="color:#555">No og:description set</em>'}</div>
+    </div>
+  </div>`;
+
+  const productSection = isShopify && shopify && shopify.products && shopify.products.length ? `
+    <div class="section">
+      <div class="section-label">Shopify products · AI readiness</div>
+      <div class="product-grid">${shopify.products.slice(0, 8).map(p => {
+        const img = p.images && p.images[0] ? p.images[0].src : null;
+        const price = p.variants && p.variants[0] ? '$' + parseFloat(p.variants[0].price).toFixed(2) : '';
+        const desc = p.body_html ? p.body_html.replace(/<[^>]+>/g, '').trim() : '';
+        const hasDesc = desc.length > 80;
+        return `<div class="product-card">
+          <div class="product-card-img">${img ? `<img src="${img}" loading="lazy" onerror="this.style.display='none'" />` : ''}</div>
+          <div class="product-card-body">
+            <div class="product-card-name">${p.title}</div>
+            <div class="product-card-price">${price}</div>
+            <div class="product-card-badges">
+              <span class="pb ${hasDesc ? 'pb-ok' : 'pb-bad'}">${hasDesc ? 'desc ✓' : 'no desc'}</span>
+              <span class="pb ${img ? 'pb-ok' : 'pb-bad'}">${img ? 'img ✓' : 'no img'}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}</div>
+    </div>` : '';
+
+  const SHARED_MODE = window._sharedMode || false;
+  const VISIBLE_ISSUES = SHARED_MODE ? 3 : issues.length;
+
+  const issueHtml = issues.map((issue, idx) => {
+    const icon = issue.sev === 'danger' ? '!' : '~';
+    const tags = issue.tags.map(t => {
+      let cls = 'itag-seo';
+      if (t.toLowerCase().includes('ai critical')) cls = 'itag-crit';
+      else if (t.toLowerCase().includes('ai')) cls = 'itag-ai';
+      else if (t.toLowerCase().includes('critical')) cls = 'itag-crit';
+      return `<span class="itag ${cls}">${t}</span>`;
+    }).join('');
+    return `<div class="issue-item">
+      <div class="issue-icon ii-${issue.sev}">${icon}</div>
+      <div class="issue-body">
+        <div class="issue-headline">${issue.headline}</div>
+        <div class="issue-why">${issue.why}</div>
+        <div class="issue-tags">${tags}</div>
+      </div>
+    </div>`;
+  }).slice(0, VISIBLE_ISSUES).join('');
+
+  const issueGate = SHARED_MODE && issues.length > 3 ? `
+    <div class="shared-gate" id="sharedGate" style="margin-top:1rem;">
+      <div class="shared-gate-label">GET FULL REPORT</div>
+      <h3>${issues.length - 3} more issues hidden on ${data.domain}</h3>
+      <p>Enter your email and we'll send the complete report — all ${issues.length} issues, what they mean, and how to fix them.</p>
+      <div class="shared-gate-form">
+        <input type="email" id="sharedGateEmail" placeholder="your@email.com" />
+        <button onclick="submitSharedGate()">Send me the full report →</button>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);margin-top:8px;letter-spacing:0.03em;">Free. No pitch call. We'll follow up with insights.</div>
+    </div>` : '';
+
+  return `
+    <!-- REPORT HEADER -->
+    <div class="report-header reveal d1">
+      <a href="https://attomik.co" target="_blank" rel="noopener" style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3162.208309618669 909.2179303030312" style="height:36px;width:auto;display:block;">
+        <g transform="scale(8.11041548093341) translate(10, 10)">
+          <g transform="matrix(1.0466489028630275,0,0,1.0466489028630275,-6.279812066960743,-6.279893417178165)" fill="#ffffff">
+            <g transform="translate(0,-952.36218)">
+              <path d="m 13.540789,1013.168 c -4.1612604,0 -7.5408665,3.3922 -7.5408665,7.5693 0,4.1771 3.3796061,7.605 7.5408665,7.605 0.813543,0 1.613976,-0.1361 2.383228,-0.3928 12.281102,18.8997 36.649842,23.2608 54.493227,13.032 0.521221,-0.2991 0.724607,-1.0475 0.426614,-1.571 -0.297992,-0.5234 -1.043503,-0.7275 -1.565078,-0.4284 -16.772953,9.6153 -39.67122,5.6292 -51.327282,-12.1037 1.894251,-1.3812 3.130157,-3.6195 3.130157,-6.1411 0,-4.1771 -3.379252,-7.5693 -7.540866,-7.5693 z" fill="#ffffff"/>
+              <path d="m 70.417244,970.57299 c -0.951023,0.12132 -1.237323,1.69026 -0.391181,2.14225 13.429842,8.21899 20.928543,24.30182 17.64248,40.55986 -0.392953,-0.067 -0.80185,-0.107 -1.209331,-0.107 -4.161259,0 -7.540866,3.3922 -7.540866,7.5692 0,4.1771 3.379607,7.605 7.540866,7.605 4.16126,0 7.540866,-3.4279 7.540866,-7.605 0,-2.9516 -1.686968,-5.51 -4.161614,-6.748 3.607441,-17.29107 -4.331338,-34.48188 -18.638503,-43.23773 -0.189921,-0.12122 -0.415984,-0.18423 -0.64063,-0.17852 -0.04784,-0.003 -0.09425,-0.003 -0.142087,0 z" fill="#ffffff"/>
+              <path d="m 50.000001,958.36218 c -4.012441,0 -7.27441,3.16987 -7.505079,7.14083 -17.197086,3.19362 -29.727637,16.85266 -32.5821254,33.06201 a 1.1383515,1.1426463 0 1 0 2.2407874,0.39275 c 2.681221,-15.22486 14.388307,-28.07084 30.518858,-31.1697 0.826653,3.28539 3.802677,5.71266 7.327559,5.71266 4.161259,0 7.540866,-3.39219 7.540866,-7.56928 0,-4.17708 -3.379607,-7.56927 -7.540866,-7.56927 z" fill="#ffffff"/>
+            </g>
+          </g>
+          <g transform="matrix(2.781435636606215,0,0,2.781435636606215,111.83311435253162,11.314013949983305)" fill="#ffffff">
+            <path d="M12.76 20 l-1.6 -3.72 l-7.94 0 l-1.6 3.72 l-1.56 0 l6.28 -14.58 l1.74 0 l6.3 14.58 l-1.62 0 z M10.58 14.88 l-3.4 -7.88 l-3.38 7.88 l6.78 0 z M21.24 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M33.32 6.86 l0 13.14 l-1.52 0 l0 -13.14 l-4.88 0 l0 -1.44 l11.28 0 l0 1.44 l-4.88 0 z M54.26 12.68 c0 1.38 -0.32 2.64 -0.94 3.78 c-0.64 1.14 -1.52 2.04 -2.64 2.7 c-1.14 0.66 -2.38 1 -3.78 1 c-1.02 0 -1.98 -0.2 -2.9 -0.58 c-0.9 -0.38 -1.68 -0.9 -2.32 -1.58 c-0.64 -0.64 -1.14 -1.42 -1.52 -2.34 c-0.36 -0.92 -0.56 -1.88 -0.56 -2.9 c0 -1.38 0.32 -2.64 0.96 -3.78 c0.62 -1.14 1.5 -2.06 2.64 -2.72 c1.12 -0.66 2.38 -0.98 3.76 -0.98 c1.02 0 1.98 0.18 2.9 0.56 c0.9 0.4 1.68 0.92 2.32 1.56 c0.64 0.68 1.16 1.46 1.52 2.36 c0.38 0.92 0.56 1.88 0.56 2.92 z M52.68 12.76 c0 -1.64 -0.6 -3.16 -1.6 -4.26 s-2.5 -1.8 -4.18 -1.8 c-1.08 0 -2.06 0.28 -2.94 0.8 c-0.88 0.56 -1.56 1.28 -2.04 2.18 c-0.48 0.92 -0.72 1.92 -0.72 3 c0 1.62 0.6 3.16 1.6 4.24 c1 1.1 2.5 1.8 4.16 1.8 c1.08 0 2.06 -0.28 2.94 -0.82 c0.9 -0.52 1.58 -1.26 2.06 -2.16 s0.72 -1.9 0.72 -2.98 z M70.3 5.42 l2.2 0 l0 14.58 l-1.52 0 l0 -12.5 l0 0 l-5.42 12.5 l-1.38 0 l-5.38 -12.4 l0 0 l0 12.4 l-1.52 0 l0 -14.58 l2.18 0 l5.44 12.5 z M76.56 20 l0 -14.58 l1.54 0 l0 14.58 l-1.54 0 z M83.68 20 l-1.54 0 l0 -14.58 l1.54 0 l0 6.44 l0.1 0 l6.54 -6.44 l2.12 0 l-7.14 6.98 l7.48 7.6 l-2.16 0 l-6.84 -7.02 l-0.1 0 l0 7.02 z"/>
+          </g>
+        </g>
+      </svg></a>
+      <div class="report-header-sub">AI Visibility Report · ${data.domain}</div>
+      <button class="share-btn" id="shareBtn" onclick="shareReport()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="13" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="2.5" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="8" x2="11.5" y2="3.2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="8" x2="11.5" y2="12.8" stroke="currentColor" stroke-width="1.3"/></svg>
+        Share report
+      </button>
+    </div>
+
+    <!-- VERDICT HERO -->
+    <div class="verdict-hero reveal reveal-score d1">
+      <div class="verdict-score-wrap">
+        <div class="verdict-score-label">AI VISIBILITY SCORE</div>
+        <div class="verdict-score ${sc}">${combined}<span class="verdict-denom">/100</span></div>
+      </div>
+      <div class="verdict-text">
+        <div class="verdict-headline">${verdictHeadline}</div>
+        <div class="verdict-sub">${verdictSub}</div>
+        <div class="verdict-stats">
+          <div class="vstat"><div class="vstat-num danger-text">${critCount}</div><div class="vstat-label">Critical issues</div></div>
+          <div class="vstat"><div class="vstat-num warn-text">${warnCount}</div><div class="vstat-label">Warnings</div></div>
+          <div class="vstat"><div class="vstat-num" style="color:var(--accent)">${aiScore}</div><div class="vstat-label">AI readiness</div></div>
+          <div class="vstat"><div class="vstat-num" style="color:#999">${seoScore}</div><div class="vstat-label">SEO foundation</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE BARS -->
+    <div class="reveal d2" style="margin-bottom:2rem;">
+      ${[{l:'Overall AI visibility',v:combined,c:'bf-accent'},{l:'AI search readiness',v:aiScore},{l:'Technical SEO',v:seoScore}].map(b => `
+        <div class="bar-row">
+          <div class="bar-lbl"><span>${b.l}</span><span>${b.v}/100</span></div>
+          <div class="bar-track"><div class="bar-fill ${b.c || barClass(b.v)}" style="width:0%" data-w="${b.v}%"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <hr class="reveal d3" />
+
+    <!-- AI ENGINES - BIG ROWS -->
+    <div class="reveal d3">
+      <div class="big-section-label">AI ENGINE REPORT</div>
+      <div class="big-section-sub">How each AI platform currently sees your brand</div>
+    </div>
+
+    ${(() => {
+      const avg = (aiScore + seoScore) / 2;
+      return [
+        { name: 'ChatGPT', desc: 'The most widely used AI for product discovery and recommendations. When shoppers ask "what\'s the best X", ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear in results' : 'Not being recommended', cls: avg >= 65 ? 'es-warn' : 'es-danger', pct: Math.round(avg * 0.9) },
+        { name: 'Perplexity', desc: 'The AI search engine growing fastest among research-driven buyers. Product pages with structured data and rich content rank here — thin pages don\'t.', label: aiScore >= 60 ? 'Indexable with gaps' : 'Invisible to search', cls: aiScore >= 60 ? 'es-warn' : 'es-danger', pct: Math.round(aiScore * 0.85) },
+        { name: 'Google AI Overviews', desc: 'Google\'s AI-generated summaries now appear above organic results. Brands without schema markup, E-E-A-T signals, and FAQ content are excluded entirely.', label: (seoScore >= 65 && aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', cls: (seoScore >= 65 && aiScore >= 55) ? 'es-warn' : 'es-danger', pct: Math.round((seoScore * 0.6 + aiScore * 0.4) * 0.9) },
+        { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge, and Bing — reaching hundreds of millions of users. Copilot pulls from structured web data and Open Graph metadata to build brand summaries.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', cls: avg >= 70 ? 'es-warn' : 'es-danger', pct: Math.round(avg * 0.8) },
+      ].map((e, i) => `
+        <div class="engine-big-row reveal d${4+i}">
+          <div class="engine-big-left">
+            <div class="engine-big-name">${e.name}</div>
+            <div class="engine-big-desc">${e.desc}</div>
+          </div>
+          <div class="engine-big-right">
+            <div class="engine-big-pct-num ${e.cls === 'es-danger' ? 'danger' : 'warn'}">${e.pct}<span class="engine-big-pct-unit">%</span></div>
+            <div class="engine-big-status ${e.cls}">${e.label}</div>
+            <div class="engine-big-bar-track"><div class="engine-big-bar-fill ${e.cls === 'es-danger' ? 'ebf-danger' : 'ebf-warn'}" style="width:0%" data-w="${e.pct}%"></div></div>
+          </div>
+        </div>`).join('');
+    })()}
+
+    <hr class="reveal d8" />
+
+    <!-- BRAND ASSETS -->
+    <div class="reveal d8">
+      <div class="big-section-label">WHAT WE FOUND ON YOUR SITE</div>
+      <div class="big-section-sub">A snapshot of your current brand presence</div>
+    </div>
+
+    <div class="two-col reveal d8" style="margin-bottom:2rem;">
+      <div class="section">
+        <div class="section-label">Brand colors detected</div>
+        ${swatches}
+      </div>
+      <div class="section">
+        <div class="section-label">Social & AI share preview</div>
+        ${ogCard}
+      </div>
+    </div>
+
+    <div class="section reveal d9" style="margin-bottom:2rem;">
+      <div class="section-label">Page images found (${imgUrls.length})</div>
+      ${imageGrid}
+    </div>
+
+    <div class="reveal d9">${productSection}</div>
+
+    <hr class="reveal d9" />
+
+    <!-- ISSUES -->
+    <div class="reveal d9">
+      <div class="big-section-label">${issues.length} ISSUES KILLING YOUR AI VISIBILITY</div>
+      <div class="big-section-sub" style="margin-bottom:1.5rem;">Each one is an active reason AI assistants skip you and recommend a competitor instead.</div>
+      <div class="issues-list">${issueHtml}</div>
+      ${issueGate}
+    </div>
+
+    <hr />
+
+    <!-- MID-PAGE CTA -->
+    <div class="mid-cta">
+      <div class="mid-cta-left">
+        <div class="mid-cta-score ${sc}">${combined}</div>
+        <div>
+          <div class="mid-cta-title">Your AI Visibility Score</div>
+          <div class="mid-cta-sub">You're ${100 - combined} points away from being the brand AI recommends.</div>
+        </div>
+      </div>
+      <button class="mid-cta-btn" onclick="document.querySelector('.cta-section').scrollIntoView({behavior:'smooth'})">Get my fix plan →</button>
+    </div>
+
+    <!-- FINAL CTA -->
+    <div class="cta-section">
+      <div class="cta-badge">FREE 30-DAY AUDIT</div>
+      <h2>STOP LOSING SALES TO AI<br><em>THAT CAN'T FIND YOU.</em></h2>
+      <p>Send us your URL and we'll send back a free snapshot of exactly where you're losing AI visibility — no commitment, no pitch call required.</p>
+      <div class="cta-features">
+        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Free deeper audit — no strings attached</div>
+        <div class="cta-feat"><span class="cta-feat-icon">✓</span>We identify your biggest quick wins first</div>
+        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Shopify & ecommerce specialists</div>
+        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Only pay if you want us to fix it</div>
+      </div>
+      <div id="ctaFormWrap">
+        <div class="cta-inputs">
+          <input class="cta-input" id="ctaName" type="text" placeholder="Your name" />
+          <input class="cta-input" id="ctaEmail" type="email" placeholder="Work email" />
+        </div>
+        <button class="cta-submit" id="ctaSubmitBtn">Get my free deeper audit →</button>
+      </div>
+      <p class="cta-note">Takes 30 seconds. We'll follow up with insights, not a sales pitch.</p>
+      <a class="cta-book" href="https://attomik.co">Or book a call directly →</a>
+    </div>
+
+    <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> · Free AI Search Visibility Scanner</p>
+  `;
+}
+
+async function runAudit() {
+  let raw = document.getElementById('urlInput').value.trim();
+  const input = document.getElementById('urlInput');
+
+  if (!raw) {
+    input.style.borderColor = '#ef4444';
+    input.placeholder = 'Please enter a URL first';
+    input.focus();
+    return;
+  }
+
+  // Add https if missing
+  if (!raw.startsWith('http')) raw = 'https://' + raw;
+
+  // Validate it looks like a real URL with a domain
+  let isValid = false;
+  try {
+    const u = new URL(raw);
+    isValid = u.hostname.includes('.') && u.hostname.length > 3;
+  } catch {}
+
+  if (!isValid) {
+    input.style.borderColor = '#ef4444';
+    input.value = '';
+    input.placeholder = 'Enter a valid URL e.g. https://yourbrand.com';
+    input.focus();
+    return;
+  }
+
+  // Reset input style
+  input.style.borderColor = '';
+
+  const btn = document.getElementById('auditBtn');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+  resultsEl.classList.remove('visible');
+  document.body.classList.remove('has-results');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showOverlay(raw);
+
+  try {
+    const scanStart = Date.now();
+
+    const html = await fetchPage(raw);
+    if (!html) {
+      const overlay = document.getElementById('scanOverlay');
+      const inner = overlay.querySelector('.scan-inner');
+      overlay.style.cssText = 'display:flex;position:fixed;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;';
+      inner.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
+      inner.innerHTML =
+        '<div style="text-align:center;padding:2rem;max-width:480px;">' +
+          '<div style="font-size:40px;margin-bottom:1.5rem;">🔒</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.75rem;">This site blocked the scan</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:2rem;"><strong style="color:rgba(255,255,255,0.7)">' + getDomain(raw) + '</strong> is blocking external requests.<br>Try a Shopify store like glossier.com,<br>gymshark.com or drinkhpo.com</div>' +
+          '<button id="tryAgainBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:12px 28px;font-family:\'Barlow\',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.01em;">← Try another URL</button>' +
+        '</div>';
+      document.getElementById('tryAgainBtn').addEventListener('click', () => {
+        overlay.classList.remove('visible');
+        overlay.style.cssText = '';
+        document.getElementById('urlInput').value = '';
+        document.getElementById('urlInput').focus();
+      });
+      btn.disabled = false;
+      btn.textContent = 'Check my AI visibility →';
+      return;
+    }
+
+    const doc = parseHTML(html);
+    const org = getOrigin(raw);
+
+    await new Promise(r => setTimeout(r, 0));
+
+    const isShopify = html.includes('cdn.shopify.com') || !!doc.querySelector('meta[name="shopify-checkout-api-token"]');
+    let shopify = null;
+    if (isShopify) {
+      shopify = await fetchJSON(org + '/products.json?limit=8');
+    }
+
+    await new Promise(r => setTimeout(r, 0));
+
+    const imgEls = [...doc.querySelectorAll('img[src]')];
+    const imgUrls = [...new Set(
+      imgEls
+        .map(i => absUrl(i.getAttribute('src'), org))
+        .filter(Boolean)
+        .filter(u =>
+          !u.includes('1x1') && !u.includes('tracking') && !u.includes('pixel') &&
+          !u.includes('.svg') && !u.includes('icon') && !u.includes('logo') &&
+          !u.includes('sprite') && !u.includes('blank') && !u.includes('spacer')
+        )
+        // Normalize URLs to strip query strings for dedup
+        .map(u => { try { const p = new URL(u); p.search = ''; return p.href; } catch { return u; } })
+    )];
+
+    await new Promise(r => setTimeout(r, 0));
+
+    const colors = extractColorsFromCSS(html, doc);
+
+    await new Promise(r => setTimeout(r, 0));
+
+    const data = analyze(doc, raw, shopify);
+
+    // Enforce minimum 5 seconds of scan drama
+    const elapsed = Date.now() - scanStart;
+    const minScan = 5000;
+    if (elapsed < minScan) await new Promise(r => setTimeout(r, minScan - elapsed));
+
+    // Mark all steps done
+    for (let i = 0; i < SCAN_STEPS.length; i++) completeStep(i);
+
+    // Add a 6th "Building report" row that shows as loading (not green)
+    const stepsEl = document.getElementById('scanSteps');
+    if (stepsEl) {
+      const buildRow = document.createElement('div');
+      buildRow.className = 'scan-step active';
+      buildRow.id = 'step-building';
+      buildRow.innerHTML =
+        '<div class="scan-step-icon" style="border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.4);">' +
+          '<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"><animateTransform attributeName="transform" type="rotate" from="0 5 5" to="360 5 5" dur="0.8s" repeatCount="indefinite"/></circle></svg>' +
+        '</div>' +
+        '<div class="scan-step-text">' +
+          '<div class="scan-step-label" style="color:rgba(255,255,255,0.85);">Building your report</div>' +
+          '<div class="scan-step-sub">Compiling results...</div>' +
+        '</div>';
+      stepsEl.appendChild(buildRow);
+    }
+
+    // Update status text — white, not green
+    const scanStatusEl = document.getElementById('scanStatus');
+    if (scanStatusEl) {
+      scanStatusEl.style.cssText = 'font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase;';
+      scanStatusEl.textContent = 'Preparing your results...';
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── SEND REPORT + CAPTURE LEAD ────────────────────────────────────────
+    async function sendReport({ email, name, source }) {
+      const avg = (data.aiScore + data.seoScore) / 2;
+      const engines = [
+        { name: 'ChatGPT',           pct: Math.round(avg * 0.9),                                          label: avg >= 65 ? 'May appear' : 'Not recommended' },
+        { name: 'Perplexity',        pct: Math.round(data.aiScore * 0.85),                                label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
+        { name: 'Google AI',         pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9),  label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
+        { name: 'Copilot',           pct: Math.round(avg * 0.8),                                          label: avg >= 70 ? 'Limited' : 'Not optimized' },
+      ];
+      try {
+        await fetch('/api/send-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email, name: name || null, source,
+            domain: data.domain,
+            url: document.getElementById('urlInput')?.value.trim() || data.domain,
+            aiScore: data.aiScore,
+            seoScore: data.seoScore,
+            combined,
+            critCount,
+            warnCount: data.issues.filter(i => i.sev === 'warn').length,
+            issues: data.issues,
+            engines,
+          }),
+        });
+      } catch (err) {
+        console.warn('sendReport failed silently:', err.message);
+      }
+    }
+    await sleep(1400);
+
+    // ── BUILDING YOUR RESULTS ──
+    const overlay = document.getElementById('scanOverlay');
+    const inner = overlay.querySelector('.scan-inner');
+    overlay.style.cssText = 'display:flex;position:fixed;inset:0;z-index:200;background:#000;align-items:center;justify-content:center;';
+    inner.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;';
+    inner.innerHTML =
+      '<div id="bld" style="text-align:center;opacity:0;transition:opacity 0.5s ease;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.12em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:2rem;">BUILDING YOUR RESULTS</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(38px,7vw,80px);font-weight:800;letter-spacing:-0.04em;color:#fff;line-height:1;margin-bottom:2.5rem;">' + data.domain + '</div>' +
+        '<div style="width:260px;height:2px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;margin:0 auto 1rem;">' +
+          '<div id="bbar" style="height:100%;width:0;background:#00ff97;border-radius:99px;transition:width 2.5s cubic-bezier(0.4,0,0.2,1);"></div>' +
+        '</div>' +
+        '<div id="blbl" style="font-family:\'DM Mono\',monospace;font-size:13px;color:rgba(255,255,255,0.55);letter-spacing:0.08em;text-transform:uppercase;transition:opacity 0.3s;">Analyzing findings...</div>' +
+      '</div>';
+
+    await sleep(60);
+    document.getElementById('bld').style.opacity = '1';
+    await sleep(80);
+    document.getElementById('bbar').style.width = '100%';
+
+    const bLabels = ['Scoring AI visibility...', 'Mapping engine coverage...', 'Checking brand signals...', 'Preparing report...'];
+    for (const lbl of bLabels) {
+      await sleep(600);
+      const el = document.getElementById('blbl');
+      if (el) { el.style.opacity = '0'; await sleep(200); el.textContent = lbl; el.style.opacity = '1'; }
+    }
+    await sleep(500);
+
+    // ── CINEMATIC SLIDES ──
+    const combined = Math.round((data.aiScore * 0.65) + (data.seoScore * 0.35));
+    const scoreColor = combined >= 70 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
+    const critCount = data.issues.filter(i => i.sev === 'danger').length;
+
+    function showSlide(html, duration) {
+      return new Promise(resolve => {
+        inner.innerHTML = html;
+        const slide = inner.firstElementChild;
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1)';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          slide.style.opacity = '1';
+          slide.style.transform = 'translateY(0)';
+        }));
+        setTimeout(() => {
+          slide.style.transition = 'opacity 0.3s ease';
+          slide.style.opacity = '0';
+          setTimeout(resolve, 320);
+        }, duration);
+      });
+    }
+
+    // SLIDE 2 — OG / Social Preview
+    const ogHtml = data.ogImage
+      ? '<img src="' + data.ogImage + '" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" onerror="this.style.display=\'none\'">'
+      : '';
+    await showSlide(
+      '<div style="text-align:center;padding:2rem;width:100%;max-width:640px;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1.25rem;">SOCIAL & AI SHARE PREVIEW</div>' +
+        '<div style="border:1px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden;background:#111;">' +
+          '<div style="height:200px;background:#1a1a1a;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">' +
+            (data.ogImage ? '<img src="' + data.ogImage + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<span style=color:rgba(255,255,255,0.2);font-family:DM Mono,monospace;font-size:12px>No OG image</span>\'">' : '<span style="color:rgba(255,255,255,0.2);font-family:\'DM Mono\',monospace;font-size:12px;">No OG image found</span>') +
+          '</div>' +
+          '<div style="padding:14px 16px;text-align:left;">' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:4px;text-transform:uppercase;">' + data.domain + '</div>' +
+            '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">' + (data.ogTitle || '<em style="opacity:0.3">No og:title set</em>') + '</div>' +
+            '<div style="font-size:13px;color:rgba(255,255,255,0.65);">' + (data.ogDesc ? data.ogDesc.substring(0,100) + '...' : '<em style="opacity:0.3">No og:description set</em>') + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>',
+      3000
+    );
+
+    // SLIDE 3 — Brand colors
+    if (colors.length) {
+      await showSlide(
+        '<div style="text-align:center;padding:2rem;">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:2rem;">BRAND COLORS DETECTED</div>' +
+          '<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">' +
+            colors.slice(0,6).map((c,i) =>
+              '<div style="opacity:0;animation:pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) ' + (i*0.1) + 's forwards;">' +
+                '<div style="width:80px;height:80px;border-radius:12px;background:' + c + ';border:1px solid rgba(255,255,255,0.1);margin-bottom:8px;"></div>' +
+                '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.4);">' + c + '</div>' +
+              '</div>'
+            ).join('') +
+          '</div>' +
+        '</div>' +
+        '<style>@keyframes pop-in{from{opacity:0;transform:scale(0.6)}to{opacity:1;transform:scale(1)}}</style>',
+        2500
+      );
+    }
+
+    // SLIDE 4 — Page images
+    if (imgUrls.length) {
+      const imgGrid = imgUrls.slice(0,9).map((u,i) =>
+        '<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;background:#1a1a1a;opacity:0;animation:fade-in 0.3s ease ' + (i*0.07) + 's forwards;">' +
+          '<img src="' + u + '" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentElement.style.display=\'none\'">' +
+        '</div>'
+      ).join('');
+      await showSlide(
+        '<div style="text-align:center;padding:2rem;width:100%;max-width:600px;">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1.5rem;">' + imgUrls.length + ' IMAGES FOUND ON SITE</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">' + imgGrid + '</div>' +
+        '</div>' +
+        '<style>@keyframes fade-in{from{opacity:0}to{opacity:1}}</style>',
+        3000
+      );
+    }
+
+    // SLIDE 5 — Shopify products
+    if (isShopify && shopify && shopify.products && shopify.products.length) {
+      const prodGrid = shopify.products.slice(0,4).map((p,i) => {
+        const img = p.images && p.images[0] ? p.images[0].src : null;
+        const price = p.variants && p.variants[0] ? '$' + parseFloat(p.variants[0].price).toFixed(2) : '';
+        return '<div style="background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;opacity:0;animation:fade-in 0.4s ease ' + (i*0.12) + 's forwards;">' +
+          '<div style="width:100%;aspect-ratio:1;overflow:hidden;background:#1a1a1a;">' + (img ? '<img src="' + img + '" style="width:100%;height:100%;object-fit:cover;display:block;">' : '') + '</div>' +
+          '<div style="padding:10px;">' +
+            '<div style="font-family:\'Barlow\',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;">' + p.title + '</div>' +
+            '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:#00ff97;">' + price + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      await showSlide(
+        '<div style="text-align:center;padding:2rem;width:100%;max-width:560px;">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:#00ff97;font-weight:700;text-transform:uppercase;margin-bottom:1.5rem;">SHOPIFY STORE DETECTED · ' + shopify.products.length + ' PRODUCTS</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' + prodGrid + '</div>' +
+        '</div>' +
+        '<style>@keyframes fade-in{from{opacity:0}to{opacity:1}}</style>',
+        3500
+      );
+    }
+
+    // SLIDES — AI Engines one by one
+    const avg = (data.aiScore + data.seoScore) / 2;
+    const engines = [
+      { name: 'ChatGPT', desc: 'When shoppers ask "what\'s the best X" — ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear' : 'Not being recommended', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.9) },
+      { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', color: data.aiScore >= 60 ? '#f59e0b' : '#ef4444', pct: Math.round(data.aiScore * 0.85) },
+      { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', color: (data.seoScore >= 65 && data.aiScore >= 55) ? '#f59e0b' : '#ef4444', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9) },
+      { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', color: avg >= 70 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.8) },
+    ];
+
+    for (const e of engines) {
+      await showSlide(
+        '<div style="text-align:center;padding:2rem;max-width:560px;">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.12em;color:rgba(255,255,255,0.8);font-weight:700;text-transform:uppercase;margin-bottom:0.75rem;">AI ENGINE REPORT</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,4.5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;line-height:1;margin-bottom:0.6rem;">' + e.name + '</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(72px,14vw,110px);font-weight:800;letter-spacing:-0.05em;line-height:1;color:' + e.color + ';margin-bottom:0.2rem;animation:score-in 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;">' + e.pct + '<span style="font-size:0.45em;font-weight:700;vertical-align:top;margin-top:0.15em;display:inline-block;">%</span></div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:700;color:' + e.color + ';margin-bottom:1.1rem;letter-spacing:-0.01em;">' + e.label + '</div>' +
+          '<div style="width:200px;background:rgba(255,255,255,0.08);border-radius:99px;height:4px;overflow:hidden;margin:0 auto 1.1rem;">' +
+            '<div style="height:100%;width:' + e.pct + '%;background:' + e.color + ';border-radius:99px;animation:bar-grow 0.8s cubic-bezier(0.16,1,0.3,1) forwards;"></div>' +
+          '</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:380px;margin:0 auto;">' + e.desc + '</div>' +
+        '</div>' +
+        '<style>@keyframes bar-grow{from{width:0}to{width:' + e.pct + '%}}</style>',
+        2200
+      );
+    }
+
+    // SLIDE 6 — THE SCORE (big moment)
+    await showSlide(
+      '<div style="text-align:center;padding:2rem;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">AI VISIBILITY SCORE</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(100px,20vw,160px);font-weight:800;letter-spacing:-0.05em;line-height:1;color:' + scoreColor + ';animation:score-in 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;">' + combined + '</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:18px;font-weight:400;color:rgba(255,255,255,0.4);margin-top:0.5rem;">out of 100</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:600;color:rgba(255,255,255,0.7);margin-top:1.5rem;max-width:400px;margin-left:auto;margin-right:auto;">' +
+          (combined >= 70 ? 'Decent foundation — but gaps are costing you.' : combined >= 45 ? 'Largely invisible to AI search engines.' : 'AI cannot confidently recommend your brand.') +
+        '</div>' +
+      '</div>' +
+      '<style>@keyframes score-in{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}</style>',
+      3000
+    );
+
+    // SLIDE 7 — Critical issues count
+    await showSlide(
+      '<div style="text-align:center;padding:2rem;">' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">CRITICAL ISSUES FOUND</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(80px,16vw,130px);font-weight:800;letter-spacing:-0.05em;line-height:1;color:#ef4444;animation:score-in 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;">' + critCount + '</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:16px;color:rgba(255,255,255,0.5);margin-top:1rem;">reasons AI is skipping your brand</div>' +
+        '<div style="display:flex;gap:2rem;justify-content:center;margin-top:2rem;">' +
+          '<div style="text-align:center;"><div style="font-family:\'Barlow\',sans-serif;font-size:32px;font-weight:800;color:#f59e0b;">' + data.aiScore + '</div><div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-top:4px;">AI readiness</div></div>' +
+          '<div style="text-align:center;"><div style="font-family:\'Barlow\',sans-serif;font-size:32px;font-weight:800;color:#aaa;">' + data.seoScore + '</div><div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-top:4px;">SEO foundation</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<style>@keyframes score-in{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}</style>',
+      3000
+    );
+
+    // SLIDE 8 — Email gate to unlock full report
+    await new Promise(resolve => {
+      inner.innerHTML =
+        '<div style="text-align:center;padding:2rem;max-width:480px;opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s cubic-bezier(0.16,1,0.3,1);" id="finalSlide">' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">YOUR REPORT IS READY</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">SEE EVERY GAP.<br>GET THE FIX PLAN.</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send the full report straight to your inbox — plus a free deeper audit from our team.</div>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto 12px;">' +
+            '<input id="gateEmail" type="email" placeholder="Enter your work email" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:13px 16px;color:#fff;font-family:\'Barlow\',sans-serif;font-size:15px;outline:none;text-align:center;" />' +
+            '<button id="vrBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me my results →</button>' +
+          '</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.25);margin-top:10px;">' + data.issues.length + ' issues · ' + critCount + ' critical · results sent instantly</div>' +
+        '</div>';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const s = document.getElementById('finalSlide');
+        if (s) { s.style.opacity = '1'; s.style.transform = 'translateY(0)'; }
+        const input = document.getElementById('gateEmail');
+        if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') { document.getElementById('vrBtn').click(); } });
+      }));
+      document.getElementById('vrBtn').addEventListener('click', () => {
+        const email = document.getElementById('gateEmail')?.value.trim();
+        if (!email || !email.includes('@')) {
+          document.getElementById('gateEmail').style.borderColor = '#ef4444';
+          document.getElementById('gateEmail').placeholder = 'Please enter a valid email';
+          return;
+        }
+        window._gatedEmail = email;
+        sendReport({ email, source: 'gate' });
+
+        // Show sending animation
+        const slide = document.getElementById('finalSlide');
+        if (slide) {
+          slide.style.transition = 'opacity 0.3s ease';
+          slide.style.opacity = '0';
+          setTimeout(() => {
+            slide.innerHTML =
+              '<div style="text-align:center;">' +
+                '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1.5rem;">SENDING YOUR RESULTS</div>' +
+                '<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:1.5rem;">' +
+                  [0,1,2].map(i => '<div style="width:10px;height:10px;border-radius:50%;background:#00ff97;animation:dot-bounce 0.8s ease-in-out ' + (i*0.15) + 's infinite alternate;"></div>').join('') +
+                '</div>' +
+                '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.6);">Sending to ' + email + '</div>' +
+              '</div>' +
+              '<style>@keyframes dot-bounce{from{transform:translateY(0);opacity:0.4}to{transform:translateY(-10px);opacity:1}}</style>';
+            slide.style.opacity = '1';
+            setTimeout(resolve, 1800);
+          }, 320);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    // Hide hero BEFORE closing overlay to prevent flash
+    document.body.classList.add('has-results');
+
+    // Close overlay, show report
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    await sleep(420);
+    overlay.classList.remove('visible');
+    overlay.style.opacity = '';
+    overlay.style.transition = '';
+    overlay.style.cssText = '';
+
+    const wrap = document.getElementById('results');
+    // Store for share function
+    window._auditResult = {
+      domain:   data.domain,
+      aiScore:  data.aiScore,
+      seoScore: data.seoScore,
+      combined: Math.round((data.aiScore * 0.65) + (data.seoScore * 0.35)),
+      critCount: data.issues.filter(i => i.sev === 'danger').length,
+      warnCount: data.issues.filter(i => i.sev === 'warn').length,
+      issues:   data.issues,
+      engines:  (() => {
+        const avg = (data.aiScore + data.seoScore) / 2;
+        return [
+          { name: 'ChatGPT',          pct: Math.round(avg * 0.9),                                         label: avg >= 65 ? 'May appear' : 'Not recommended' },
+          { name: 'Perplexity',       pct: Math.round(data.aiScore * 0.85),                               label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
+          { name: 'Google AI',        pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9), label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
+          { name: 'Copilot',          pct: Math.round(avg * 0.8),                                         label: avg >= 70 ? 'Limited' : 'Not optimized' },
+        ];
+      })(),
+    };
+    window._shareUrl = null; // reset share URL for new report
+    wrap.innerHTML = buildResults(data, colors, imgUrls, shopify, raw, isShopify);
+    wrap.classList.add('visible');
+
+    // Add "try another URL" button at bottom
+    const tryAnother = document.createElement('div');
+    tryAnother.className = 'try-another';
+    tryAnother.innerHTML = \`
+      <button class="try-another-btn" id="tryAnotherBtn">← Try another URL</button>
+      <button class="share-btn" style="margin-top:8px;" onclick="shareReport()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="13" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="2.5" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="8" x2="11.5" y2="3.2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="8" x2="11.5" y2="12.8" stroke="currentColor" stroke-width="1.3"/></svg>
+        Share this report
+      </button>\`;
+    wrap.appendChild(tryAnother);
+    document.getElementById('tryAnotherBtn').addEventListener('click', () => {
+      // Clear results
+      wrap.innerHTML = '';
+      wrap.classList.remove('visible');
+      document.body.classList.remove('has-results');
+
+      // Reset all stale state from previous run
+      window._gatedEmail = null;
+      window._auditData  = null;
+
+      // Re-enable the audit button in case it got stuck
+      const auditBtn = document.getElementById('auditBtn');
+      if (auditBtn) {
+        auditBtn.disabled = false;
+        auditBtn.textContent = 'Check my AI visibility →';
+      }
+
+      // Clear the scan overlay in case it's still visible
+      const overlay = document.getElementById('scanOverlay');
+      if (overlay) {
+        overlay.classList.remove('visible');
+        overlay.style.cssText = '';
+      }
+
+      document.getElementById('urlInput').value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => document.getElementById('urlInput').focus(), 400);
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+      setTimeout(() => {
+        document.querySelectorAll('[data-w]').forEach(bar => { bar.style.width = bar.dataset.w; });
+      }, 400);
+    });
+
+    const ctaBtn = document.getElementById('ctaSubmitBtn');
+    // Pre-fill email from gate
+    const ctaEmailEl = document.getElementById('ctaEmail');
+    if (ctaEmailEl && window._gatedEmail) ctaEmailEl.value = window._gatedEmail;
+
+    // If email already captured at gate, replace form with simple connect button
+    if (window._gatedEmail) {
+      const formWrap = document.getElementById('ctaFormWrap');
+      if (formWrap) {
+        formWrap.innerHTML =
+          '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:14px;">' + window._gatedEmail + '</div>' +
+          '<button class="cta-submit" id="ctaSubmitBtn" style="max-width:380px;">Yes, I want Attomik to fix this →</button>';
+      }
+    }
+
+    const ctaBtn2 = document.getElementById('ctaSubmitBtn');
+    if (ctaBtn2) ctaBtn2.addEventListener('click', function() {
+      if (window._gatedEmail) {
+        // Email already collected at gate — mark as CTA intent
+        sendReport({ email: window._gatedEmail, source: 'cta' });
+        ctaBtn2.textContent = '✓ We\'ll be in touch — check your inbox!';
+        ctaBtn2.style.background = '#00ff97';
+        ctaBtn2.style.color = '#000';
+        ctaBtn2.disabled = true;
+        return;
+      }
+      const name = document.getElementById('ctaName')?.value.trim();
+      const email = document.getElementById('ctaEmail')?.value.trim();
+      if (!name || !email) { alert('Please fill in your name and email.'); return; }
+      sendReport({ email, name, source: 'cta' });
+      ctaBtn2.textContent = '✓ Sent — we\'ll reach out within 1 business day';
+      ctaBtn2.style.background = '#00ff97';
+      ctaBtn2.style.color = '#000';
+      ctaBtn2.disabled = true;
+    });
+
+  } catch(err) {
+    console.error('Audit error:', err.message, err.stack);
+    hideOverlayWithError('Error: ' + err.message.substring(0, 80));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Check my AI visibility →';
+  }
+}
+
+
+// ── SHARE REPORT ─────────────────────────────────────────────────────────────
+function generateToken() {
+  return Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+}
+
+async function shareReport() {
+  // If we already have a share URL for this report, just copy it
+  if (window._shareUrl) {
+    copyShareUrl(window._shareUrl);
+    return;
+  }
+
+  const token = generateToken();
+  window._shareToken = token;
+
+  // Build the share payload from current audit data
+  const shareData = {
+    token,
+    email:    window._gatedEmail || 'anonymous',
+    domain:   window._auditResult?.domain || '',
+    url:      document.getElementById('urlInput')?.value?.trim() || '',
+    aiScore:  window._auditResult?.aiScore  || 0,
+    seoScore: window._auditResult?.seoScore || 0,
+    combined: window._auditResult?.combined || 0,
+    critCount: window._auditResult?.critCount || 0,
+    warnCount: window._auditResult?.warnCount || 0,
+    issues:   window._auditResult?.issues || [],
+    engines:  window._auditResult?.engines || [],
+  };
+
+  try {
+    const res = await fetch('/api/create-share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(shareData),
+    });
+    const json = await res.json();
+    if (json.url) {
+      window._shareUrl = json.url;
+      copyShareUrl(json.url);
+    }
+  } catch {
+    // Fallback: copy current page URL with token param
+    const fallback = `https://audit.attomik.co/r/${token}`;
+    window._shareUrl = fallback;
+    copyShareUrl(fallback);
+  }
+}
+
+async function submitSharedGate() {
+  const input = document.getElementById('sharedGateEmail');
+  const email = input?.value.trim();
+  if (!email || !email.includes('@')) {
+    if (input) { input.style.borderColor = '#ef4444'; input.placeholder = 'Enter a valid email'; }
+    return;
+  }
+  const btn = input.nextElementSibling;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  const r = window._auditResult || {};
+  try {
+    await fetch('/api/send-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, source: 'shared-report-gate',
+        domain:   r.domain   || '',
+        url:      document.getElementById('urlInput')?.value?.trim() || '',
+        aiScore:  r.aiScore  || 0,
+        seoScore: r.seoScore || 0,
+        combined: r.combined || 0,
+        critCount: r.critCount || 0,
+        warnCount: r.warnCount || 0,
+        issues:   r.issues   || [],
+        engines:  r.engines  || [],
+      }),
+    });
+  } catch(e) { console.warn('gate send failed:', e.message); }
+
+  const gate = document.getElementById('sharedGate');
+  if (gate) gate.innerHTML = `
+    <div style="padding:0.5rem 0;text-align:center;">
+      <div style="font-size:28px;margin-bottom:0.75rem;">✓</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.4rem;">Report sent to ${email}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);">Check your inbox — the full report is on its way.</div>
+    </div>`;
+}
+
+function copyShareUrl(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    const toast = document.getElementById('shareToast');
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+    // Flash share buttons
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 2500);
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('auditBtn').addEventListener('click', runAudit);
+  document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAudit(); });
+});
+</script>
+</body>
+</html>
