@@ -286,7 +286,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
 // PASSWORD GATE
 // ═══════════════════════════════════════════════════════════════════════════════
 (function() {
-  const PW = 'attomik2025';
   const gate = document.getElementById('pwGate');
   const input = document.getElementById('pwInput');
   const btn = document.getElementById('pwBtn');
@@ -297,18 +296,33 @@ hr { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
     document.getElementById('main').style.display = '';
   }
 
-  function tryLogin() {
-    if (input.value === PW) {
-      sessionStorage.setItem('attomik_admin', 'true');
-      gate.classList.add('hidden');
-      document.getElementById('main').style.display = '';
-      document.getElementById('urlInput').focus();
-    } else {
-      err.textContent = 'Incorrect';
-      input.classList.add('shake');
-      input.style.borderColor = '#ef4444';
-      setTimeout(() => { input.classList.remove('shake'); }, 400);
+  async function tryLogin() {
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+    err.textContent = '';
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: input.value }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        sessionStorage.setItem('attomik_admin', 'true');
+        gate.classList.add('hidden');
+        document.getElementById('main').style.display = '';
+        document.getElementById('urlInput').focus();
+      } else {
+        err.textContent = 'Incorrect';
+        input.classList.add('shake');
+        input.style.borderColor = '#ef4444';
+        setTimeout(() => { input.classList.remove('shake'); }, 400);
+      }
+    } catch {
+      err.textContent = 'Connection error';
     }
+    btn.disabled = false;
+    btn.textContent = 'Unlock';
   }
 
   btn.addEventListener('click', tryLogin);
