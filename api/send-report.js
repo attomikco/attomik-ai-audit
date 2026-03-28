@@ -4,7 +4,7 @@
 // Uses shared lib/leads.js for Supabase + Notion sync
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { captureLead, APPS } from '@/lib/leads';
+import { captureLead, APPS } from '../lib/leads.js';
 
 export const config = { runtime: 'edge' };
 

@@ -4,7 +4,7 @@
 // Body: { leadId: "uuid" }
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { pushLeadToNotion } from '@/lib/leads';
+import { pushLeadToNotion } from '../lib/leads.js';
 
 export const config = { runtime: 'edge' };
 
