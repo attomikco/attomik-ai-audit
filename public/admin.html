@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Internal Audit Tool — Attomik</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #000000; --surface: #0d0d0d; --surface2: #161616;
+  --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.18);
+  --text: #ffffff; --muted: #bbbbbb; --accent: #00ff97;
+  --accent-dim: rgba(0,255,151,0.1); --accent-border: rgba(0,255,151,0.25);
+  --danger: #ef4444; --warn: #f59e0b; --ok: #00cc78;
+}
+html { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; overflow-x: hidden; }
+
+/* PASSWORD GATE */
+.pw-gate {
+  position: fixed; inset: 0; z-index: 9999; background: #000;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+}
+.pw-gate.hidden { display: none; }
+.pw-gate h2 { font-family: 'Barlow', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.25rem; }
+.pw-gate .pw-sub { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 1rem; }
+.pw-input {
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px; padding: 13px 18px; color: #fff;
+  font-family: 'DM Mono', monospace; font-size: 14px; outline: none;
+  text-align: center; width: 280px;
+}
+.pw-input:focus { border-color: var(--accent); }
+.pw-btn {
+  background: var(--accent); color: #000; border: none; border-radius: 6px;
+  padding: 12px 28px; font-family: 'Barlow', sans-serif; font-size: 15px;
+  font-weight: 800; cursor: pointer; letter-spacing: -0.02em;
+}
+.pw-error { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--danger); height: 16px; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+.shake { animation: shake 0.4s ease; }
+
+/* HEADER */
+.topbar {
+  border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(0,0,0,0.92); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-logo { font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: -0.03em; }
+.topbar-label { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; }
+.topbar-back { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.4); text-decoration: none; }
+.topbar-back:hover { color: var(--accent); }
+
+/* MAIN */
+.main { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
+
+/* FORM */
+.audit-form {
+  display: flex; gap: 8px; max-width: 600px; margin: 2rem auto;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 6px;
+}
+.audit-form input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 14px; padding: 10px 14px;
+}
+.audit-form input::placeholder { color: rgba(255,255,255,0.35); }
+.audit-form button {
+  background: var(--accent); color: #000; border: none; border-radius: 6px;
+  padding: 10px 24px; font-family: 'Barlow', sans-serif; font-size: 14px;
+  font-weight: 800; cursor: pointer; white-space: nowrap;
+}
+
+/* LOADING */
+.loading-state { text-align: center; padding: 4rem 2rem; display: none; }
+.loading-state.visible { display: block; }
+.loading-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 1.5rem; }
+.loading-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: ld 0.8s ease-in-out infinite alternate;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.15s; }
+.loading-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ld { from { opacity: 0.3; transform: translateY(0); } to { opacity: 1; transform: translateY(-8px); } }
+.loading-label {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: rgba(255,255,255,0.4); letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* REPORT */
+.report { display: none; }
+.report.visible { display: block; }
+
+/* SCORE HERO */
+.score-hero {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 2.5rem; text-align: center; margin-bottom: 1.5rem;
+}
+.score-label { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+.score-brand { font-family: 'Barlow', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+.score-num {
+  font-family: 'Barlow', sans-serif; font-size: clamp(80px,16vw,120px);
+  font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+}
+.score-denom { font-size: 0.4em; color: #333; font-weight: 400; }
+.score-verdict { font-size: 16px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+.score-stats { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+.sstat-num { font-family: 'Barlow', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.sstat-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+/* BARS */
+.bars { margin-bottom: 1.5rem; }
+.bar-row { margin-bottom: 10px; }
+.bar-lbl { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px; }
+.bar-track { height: 4px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 1.75rem 0; }
+
+/* ENGINES */
+.section-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 4px; }
+.section-sub { font-size: 15px; color: rgba(255,255,255,0.65); margin-bottom: 1.25rem; }
+.engines-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.engine-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+.engine-name { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+.engine-pct { font-family: 'Barlow', sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.engine-pct span { font-size: 18px; }
+.engine-status { font-size: 11px; margin-top: 4px; }
+
+/* BRAND ASSETS */
+.assets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.asset-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+.asset-title { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+.color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.color-swatch { width: 40px; height: 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+.color-hex { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 4px; text-align: center; }
+.og-preview { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.og-img { height: 140px; background: var(--surface2); overflow: hidden; }
+.og-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.og-body { padding: 10px; }
+.og-domain { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 2px; }
+.og-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.og-desc { font-size: 12px; color: rgba(255,255,255,0.55); }
+.image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.image-thumb { aspect-ratio: 1; border-radius: 6px; overflow: hidden; background: var(--surface2); }
+.image-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ISSUES */
+.issues-list { display: flex; flex-direction: column; gap: 8px; }
+.issue-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
+}
+.issue-icon {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.ii-danger { background: rgba(255,87,87,0.18); color: var(--danger); }
+.ii-warn { background: rgba(255,179,71,0.18); color: var(--warn); }
+.issue-body { flex: 1; }
+.issue-headline { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.issue-why { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.55; margin-bottom: 6px; }
+.issue-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.itag {
+  font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px;
+  border-radius: 4px; letter-spacing: 0.04em;
+}
+.itag-danger { background: rgba(239,68,68,0.12); color: #ef4444; }
+.itag-warn { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.itag-info { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+.impact-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px; padding: 2px 8px;
+  border-radius: 4px; background: rgba(0,255,151,0.1); color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* FIX PLAN */
+.fix-plan {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; margin-top: 1.5rem;
+}
+.fix-plan-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem; }
+.fix-plan-content {
+  font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.7;
+}
+.fix-plan-content h2 { font-family: 'Barlow', sans-serif; font-size: 18px; font-weight: 800; margin: 1.25rem 0 0.5rem; }
+.fix-plan-content h2:first-child { margin-top: 0; }
+.fix-plan-content h3 { font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 700; margin: 1rem 0 0.4rem; color: #fff; }
+.fix-plan-content ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+.fix-plan-content li { margin-bottom: 0.4rem; }
+.fix-plan-content strong { color: #fff; }
+.fix-plan-content code { font-family: 'DM Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; }
+.fix-plan-content p { margin: 0.5rem 0; }
+.h-green { color: var(--accent); }
+.h-amber { color: var(--warn); }
+.h-blue { color: #60a5fa; }
+.cursor { display: inline-block; width: 2px; height: 1em; background: var(--accent); animation: blink 0.6s infinite; vertical-align: text-bottom; margin-left: 2px; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ACTION BUTTONS */
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.5rem; }
+.action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid var(--border2); color: var(--muted);
+  font-family: 'DM Mono', monospace; font-size: 12px; padding: 10px 20px;
+  border-radius: 8px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s;
+  text-decoration: none;
+}
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--accent); color: #000;
+  font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700;
+  padding: 10px 24px; border-radius: 8px;
+  opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 640px) {
+  .engines-grid { grid-template-columns: repeat(2, 1fr); }
+  .assets-grid { grid-template-columns: 1fr; }
+  .image-grid { grid-template-columns: repeat(3, 1fr); }
+  .topbar { padding: 0 1rem; }
+  .main { padding: 1.5rem 1rem 5rem; }
+  .action-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-gate" id="pwGate">
+  <h2>ATTOMIK</h2>
+  <div class="pw-sub">Internal Audit Tool</div>
+  <input type="password" class="pw-input" id="pwInput" placeholder="Enter password" autocomplete="off"/>
+  <button class="pw-btn" id="pwBtn">Unlock</button>
+  <div class="pw-error" id="pwError"></div>
+</div>
+
+<!-- HEADER -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">ATTOMIK</span>
+    <span class="topbar-label">Internal Audit Tool</span>
+  </div>
+  <a href="https://audit.attomik.co" class="topbar-back">&larr; Back to audit.attomik.co</a>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main" style="display:none;">
+  <div id="formSection">
+    <div style="text-align:center;margin-bottom:0.5rem;">
+      <div class="section-label">RUN INTERNAL AUDIT</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.45);">Full report + AI-powered fix plan. No email gate.</div>
+    </div>
+    <div class="audit-form">
+      <input type="text" id="urlInput" placeholder="https://clientbrand.com"/>
+      <button id="auditBtn">Run Audit</button>
+    </div>
+  </div>
+
+  <div class="loading-state" id="loadingState">
+    <div class="loading-dots">
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+      <div class="loading-dot"></div>
+    </div>
+    <div class="loading-label" id="loadingLabel">Fetching page...</div>
+  </div>
+
+  <div class="report" id="report"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// PASSWORD GATE
+// ═══════════════════════════════════════════════════════════════════════════════
+(function() {
+  const PW = 'attomik2025';
+  const gate = document.getElementById('pwGate');
+  const input = document.getElementById('pwInput');
+  const btn = document.getElementById('pwBtn');
+  const err = document.getElementById('pwError');
+
+  if (sessionStorage.getItem('attomik_admin') === 'true') {
+    gate.classList.add('hidden');
+    document.getElementById('main').style.display = '';
+  }
+
+  function tryLogin() {
+    if (input.value === PW) {
+      sessionStorage.setItem('attomik_admin', 'true');
+      gate.classList.add('hidden');
+      document.getElementById('main').style.display = '';
+      document.getElementById('urlInput').focus();
+    } else {
+      err.textContent = 'Incorrect';
+      input.classList.add('shake');
+      input.style.borderColor = '#ef4444';
+      setTimeout(() => { input.classList.remove('shake'); }, 400);
+    }
+  }
+
+  btn.addEventListener('click', tryLogin);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDIT ENGINE (copied verbatim from index.html)
+// ═══════════════════════════════════════════════════════════════════════════════
+const PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+async function fetchPage(url) {
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) continue;
+      const text = await r.text();
+      if (text && text.length > 200) return text;
+    } catch {}
+  }
+  return null;
+}
+
+async function fetchJSON(url) {
+  for (const proxy of PROXIES) {
+    try {
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      return await r.json();
+    } catch {}
+  }
+  return null;
+}
+
+function parseHTML(html) { return (new DOMParser()).parseFromString(html, 'text/html'); }
+
+function decodeHtmlEntities(str) {
+  const txt = document.createElement('textarea');
+  txt.innerHTML = str;
+  return txt.value;
+}
+
+function extractBrandName(doc, domain) {
+  const ogSiteName =
+    doc.querySelector('meta[property="og:site_name"]')?.getAttribute('content') ||
+    doc.querySelector('meta[content][property="og:site_name"]')?.getAttribute('content');
+  if (ogSiteName && ogSiteName.trim()) return decodeHtmlEntities(ogSiteName.trim());
+
+  const titleEl = doc.querySelector('title');
+  if (titleEl) {
+    var title = titleEl.textContent.trim();
+    title = title.replace(/\s*[\|–—\-]\s*(Home|Official Site|Welcome|Shop|Store|Online|Official|Website).*$/i, '');
+    title = title.replace(/\s*[\|–—]\s*.+$/, '');
+    var dashParts = title.split(/\s*-\s*/);
+    if (dashParts.length > 1 && dashParts[0].trim().length > 0) {
+      title = dashParts[0].trim();
+    }
+    if (title.trim()) return decodeHtmlEntities(title.trim());
+  }
+
+  return domain;
+}
+
+function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } }
+function getOrigin(url) { try { return new URL(url).origin; } catch { return ''; } }
+
+function absUrl(src, base) {
+  if (!src) return null;
+  if (src.startsWith('http')) return src;
+  if (src.startsWith('//')) return 'https:' + src;
+  try { return new URL(src, base).href; } catch { return null; }
+}
+
+function extractColorsFromCSS(html, doc) {
+  const styleBlocks = [...doc.querySelectorAll('style')].map(s => s.textContent).join('\n');
+  const inlineStyles = [...doc.querySelectorAll('[style]')].map(el => el.getAttribute('style')).join('\n');
+  const cssText = styleBlocks + '\n' + inlineStyles;
+
+  const varMap = {};
+  const varDefRe = /--([\w-]*(?:primary|secondary|accent|brand|color|bg|background)[\w-]*)\s*:\s*(#[0-9a-fA-F]{3,6})/gi;
+  let vm;
+  while ((vm = varDefRe.exec(cssText)) !== null) {
+    varMap['--' + vm[1].toLowerCase()] = vm[2];
+  }
+
+  const counts = {};
+  const hexRe = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+  let m;
+  while ((m = hexRe.exec(cssText)) !== null) {
+    let hex = m[1];
+    if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+    hex = '#' + hex.toLowerCase();
+
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+
+    if (r > 240 && g > 240 && b > 240) continue;
+    if (r < 35  && g < 35  && b < 35)  continue;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    if (max - min < 20) continue;
+
+    counts[hex] = (counts[hex] || 0) + 1;
+  }
+
+  const boostKeys = ['primary','secondary','accent','brand','color','bg','background'];
+  for (const [varName, hex] of Object.entries(varMap)) {
+    const norm = '#' + (hex.length === 4
+      ? hex.slice(1).split('').map(c=>c+c).join('')
+      : hex.slice(1)).toLowerCase();
+    if (counts[norm] !== undefined) {
+      const isKeyVar = boostKeys.some(k => varName.includes(k));
+      counts[norm] = (counts[norm] || 0) + (isKeyVar ? 100 : 20);
+    }
+  }
+
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([hex]) => hex);
+}
+
+function analyze(doc, url, shopify) {
+  const issues = [];
+  let aiScore = 100, seoScore = 100;
+  const org = getOrigin(url);
+
+  const titleEl = doc.querySelector('title');
+  const titleTxt = titleEl ? titleEl.textContent.trim() : '';
+  if (!titleTxt) {
+    issues.push({ sev: 'danger', headline: 'No page title — AI has nothing to cite you by', why: 'AI assistants pull your brand name and category from the title tag first. Without one, your brand is anonymous.', tags: ['AI critical', 'SEO critical'], impact: 33 });
+    aiScore -= 15; seoScore -= 18;
+  } else if (titleTxt.length < 30) {
+    issues.push({ sev: 'warn', headline: `Title too short for AI citation (${titleTxt.length} chars)`, why: 'Not enough context for AI to confidently describe your brand. Aim for 50–60 characters with category and brand name.', tags: ['AI impact', 'SEO'], impact: 16 });
+    aiScore -= 8; seoScore -= 8;
+  } else if (titleTxt.length > 65) {
+    issues.push({ sev: 'warn', headline: `Title too long — truncated in search results (${titleTxt.length} chars)`, why: 'Gets cut off in Google results and provides diluted signal to AI crawlers.', tags: ['SEO'], impact: 5 });
+    seoScore -= 5;
+  }
+
+  const metaEl = doc.querySelector('meta[name="description"]');
+  const metaTxt = metaEl ? (metaEl.getAttribute('content') || '').trim() : '';
+  if (!metaTxt) {
+    issues.push({ sev: 'danger', headline: 'No meta description — AI can\'t summarize what you do', why: 'AI models use the meta description as a shortcut to understand your brand. Missing it means AI guesses — or skips you entirely.', tags: ['AI critical', 'SEO critical'], impact: 26 });
+    aiScore -= 14; seoScore -= 12;
+  } else if (metaTxt.length < 80) {
+    issues.push({ sev: 'warn', headline: `Meta description too thin (${metaTxt.length} chars)`, why: 'Too short for AI to extract a meaningful brand summary. Expand to 130–160 characters with clear value prop.', tags: ['AI impact', 'SEO'], impact: 13 });
+    aiScore -= 7; seoScore -= 6;
+  }
+
+  const h1s = doc.querySelectorAll('h1');
+  if (!h1s.length) {
+    issues.push({ sev: 'danger', headline: 'No H1 heading — AI can\'t identify your page topic', why: 'H1 tags tell AI what a page is about. Without one, AI has no structured signal to categorize and recommend your content.', tags: ['AI critical', 'SEO critical'], impact: 26 });
+    aiScore -= 12; seoScore -= 14;
+  } else if (h1s.length > 1) {
+    issues.push({ sev: 'warn', headline: `${h1s.length} H1 tags — sends conflicting topic signals to AI`, why: 'Multiple H1s confuse AI models about what the page is actually about. They may skip it for cleaner competitors.', tags: ['AI impact', 'SEO'], impact: 13 });
+    aiScore -= 6; seoScore -= 7;
+  }
+
+  const schemas = doc.querySelectorAll('script[type="application/ld+json"]');
+  if (!schemas.length) {
+    issues.push({ sev: 'danger', headline: 'No structured data — AI has no brand entity to reference', why: 'Schema.org markup is how AI models build a knowledge graph of your brand. Without it you\'re unstructured noise — impossible to cite with confidence.', tags: ['AI critical', 'SEO'], impact: 33 });
+    aiScore -= 25; seoScore -= 8;
+  } else {
+    let hasOrg = false, hasProd = false;
+    schemas.forEach(s => { try { const j = JSON.parse(s.textContent); if (['Organization','Brand'].includes(j['@type'])) hasOrg = true; if (['Product','ItemList'].includes(j['@type'])) hasProd = true; } catch {} });
+    if (!hasOrg) {
+      issues.push({ sev: 'warn', headline: 'No Organization/Brand schema — AI doesn\'t know who you are', why: 'Without Organization markup, AI can\'t connect your website to a real-world brand entity. You\'re just a collection of web pages.', tags: ['AI critical'], impact: 14 });
+      aiScore -= 14;
+    }
+    if (!hasProd) {
+      issues.push({ sev: 'warn', headline: 'No Product schema — AI can\'t recommend your products', why: 'AI shopping assistants rely on Product schema to surface items in recommendations. Your products are invisible.', tags: ['AI critical'], impact: 10 });
+      aiScore -= 10;
+    }
+  }
+
+  const words = (doc.body ? doc.body.innerText : '').trim().split(/\s+/).filter(Boolean).length;
+  if (words < 300) {
+    issues.push({ sev: 'danger', headline: `Thin content (~${words} words) — not enough for AI to understand you`, why: 'AI models need substantial text to build a confident picture of your brand. Thin pages get skipped for competitors with richer content.', tags: ['AI critical', 'Content'], impact: 18 });
+    aiScore -= 18;
+  } else if (words < 600) {
+    issues.push({ sev: 'warn', headline: `Borderline content depth (~${words} words)`, why: 'More content = more signal for AI. Aim for 600–800+ words on your homepage with clear category language.', tags: ['AI impact', 'Content'], impact: 8 });
+    aiScore -= 8;
+  }
+
+  if (!doc.querySelectorAll('[itemtype*="FAQPage"], .faq, #faq, [id*="faq"], [class*="faq"]').length) {
+    issues.push({ sev: 'warn', headline: 'No FAQ content — missing AI\'s favorite signal format', why: 'AI assistants are trained to answer questions. Pages with Q&A content get cited far more often because they match how AI is built.', tags: ['AI impact', 'Content'], impact: 14 });
+    aiScore -= 14;
+  }
+
+  if (!doc.querySelector('a[href*="about"]')) {
+    issues.push({ sev: 'warn', headline: 'No About page — AI can\'t build a brand profile', why: 'AI models construct brand profiles from About pages. Without one, there\'s no narrative for AI to learn who you are and who you serve.', tags: ['AI impact'], impact: 10 });
+    aiScore -= 10;
+  }
+
+  if (!doc.querySelector('meta[name="author"], [rel="author"], .author, [class*="author"], [itemtype*="Person"]')) {
+    issues.push({ sev: 'warn', headline: 'No expertise signals — AI discounts faceless brands', why: 'ChatGPT and Google AI weight authority signals heavily. Brands with clear human expertise get recommended; anonymous brands get skipped.', tags: ['AI impact', 'SEO'], impact: 10 });
+    aiScore -= 10;
+  }
+
+  const ogT = doc.querySelector('meta[property="og:title"]');
+  const ogD = doc.querySelector('meta[property="og:description"]');
+  const ogI = doc.querySelector('meta[property="og:image"]');
+  if (!ogT || !ogD || !ogI) {
+    issues.push({ sev: 'warn', headline: `Incomplete Open Graph (${[!ogT&&'title',!ogD&&'description',!ogI&&'image'].filter(Boolean).join(', ')} missing)`, why: 'When AI tools and social platforms preview your brand, they use OG tags. Missing ones mean broken thumbnails and no brand image in AI chat interfaces.', tags: ['AI impact', 'SEO'], impact: 11 });
+    aiScore -= 6; seoScore -= 5;
+  }
+
+  const imgs = doc.querySelectorAll('img');
+  let noAlt = 0;
+  imgs.forEach(i => { if (!i.getAttribute('alt') || !i.getAttribute('alt').trim()) noAlt++; });
+  if (noAlt > 0) {
+    issues.push({ sev: 'warn', headline: `${noAlt} image${noAlt>1?'s':''} missing alt text — invisible to AI vision`, why: 'AI models use image alt text to understand visual content. Missing alt means your product images provide zero context to AI.', tags: ['AI impact', 'SEO'], impact: 5 + Math.min(10, noAlt * 2) });
+    aiScore -= 5; seoScore -= Math.min(10, noAlt * 2);
+  }
+
+  if (!doc.querySelector('link[rel="canonical"]')) {
+    issues.push({ sev: 'warn', headline: 'No canonical tag — duplicate pages split AI authority', why: 'Without canonicals, AI crawlers may index multiple versions of the same page, making your content appear weaker than competitors.', tags: ['SEO'], impact: 6 });
+    seoScore -= 6;
+  }
+
+  issues.push({ sev: 'warn', headline: 'No llms.txt file — AI crawlers have no navigation guide', why: 'llms.txt is an emerging standard that tells AI crawlers which pages matter most. Early adopters are getting a head start on AI indexing.', tags: ['AI impact'], impact: 8 });
+  aiScore -= 8;
+
+  if (shopify && shopify.products) {
+    const thin = shopify.products.filter(p => !p.body_html || p.body_html.replace(/<[^>]+>/g,'').trim().length < 80).length;
+    if (thin > 0) {
+      issues.push({ sev: 'danger', headline: `${thin} product${thin>1?'s':''} with no description — AI won't recommend them`, why: 'When someone asks AI "what\'s the best X", it recommends products it can describe confidently. Products without copy never get recommended.', tags: ['AI critical', 'Shopify'], impact: Math.min(20, thin * 4) });
+      aiScore -= Math.min(20, thin * 4);
+    }
+  }
+
+  return {
+    aiScore: Math.max(0, Math.min(100, Math.round(aiScore))),
+    seoScore: Math.max(0, Math.min(100, Math.round(seoScore))),
+    issues, titleTxt, metaTxt, words,
+    domain: getDomain(url),
+    ogTitle: ogT ? ogT.getAttribute('content') : '',
+    ogDesc: ogD ? ogD.getAttribute('content') : '',
+    ogImage: ogI ? absUrl(ogI.getAttribute('content'), getOrigin(url)) : null,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMPLE MARKDOWN RENDERER
+// ═══════════════════════════════════════════════════════════════════════════════
+function renderMarkdown(md) {
+  let html = md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## 🟢 (.+)$/gm, '<h2 class="h-green">$1</h2>')
+    .replace(/^## 🟡 (.+)$/gm, '<h2 class="h-amber">$1</h2>')
+    .replace(/^## 🔵 (.+)$/gm, '<h2 class="h-blue">$1</h2>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, match => '<ul>' + match + '</ul>')
+    .replace(/\n{2,}/g, '</p><p>')
+    .replace(/\n/g, '<br/>');
+  // Wrap in paragraph if not starting with block element
+  if (!html.startsWith('<h') && !html.startsWith('<ul')) html = '<p>' + html + '</p>';
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIX PLAN PROMPT
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildFixPlanPrompt(data, issues, combined, aiScore, seoScore) {
+  const critIssues = issues.filter(i => i.sev === 'danger').map(i => i.headline).join('\n- ');
+  const warnIssues = issues.filter(i => i.sev === 'warn').map(i => i.headline).join('\n- ');
+  return `You are an expert ecommerce AI visibility consultant at Attomik.
+
+A client's website has been audited with these results:
+- Domain: ${data.domain}
+- AI Visibility Score: ${combined}/100
+- AI Readiness: ${aiScore}/100
+- SEO Foundation: ${seoScore}/100
+
+Critical issues found:
+- ${critIssues}
+
+Warnings found:
+- ${warnIssues}
+
+Create a prioritized fix plan grouped into 3 tiers:
+
+## 🟢 Quick Wins (This Week)
+Actions that take less than 2 hours and have immediate impact on AI visibility.
+
+## 🟡 High Impact (This Month)
+Fixes that require more effort but significantly move the score.
+
+## 🔵 Long Term (Next Quarter)
+Strategic improvements that compound over time.
+
+For each action:
+- Be extremely specific and actionable (not generic advice)
+- Include the exact code, copy, or steps needed where relevant
+- Estimate the score impact (+X points)
+- Note the effort level (30 min / 2 hrs / 1 day etc)
+
+Format in clean markdown. Be direct and technical. This is for the Attomik team who will implement these fixes.`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RUN AUDIT
+// ═══════════════════════════════════════════════════════════════════════════════
+let fixPlanRawMarkdown = '';
+
+async function runAudit() {
+  const input = document.getElementById('urlInput');
+  let raw = input.value.trim();
+  if (!raw) return;
+  if (!raw.match(/^https?:\/\//)) raw = 'https://' + raw;
+
+  const btn = document.getElementById('auditBtn');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+
+  const loading = document.getElementById('loadingState');
+  const report = document.getElementById('report');
+  const form = document.getElementById('formSection');
+  loading.classList.add('visible');
+  report.classList.remove('visible');
+  report.innerHTML = '';
+
+  const lbl = document.getElementById('loadingLabel');
+
+  try {
+    lbl.textContent = 'Fetching page...';
+    const html = await fetchPage(raw);
+    if (!html) throw new Error('Could not fetch page. Check the URL.');
+
+    lbl.textContent = 'Analyzing content...';
+    const doc = parseHTML(html);
+    const org = getOrigin(raw);
+
+    const isShopify = html.includes('cdn.shopify.com') || !!doc.querySelector('meta[name="shopify-checkout-api-token"]');
+    let shopify = null;
+    if (isShopify) {
+      shopify = await fetchJSON(org + '/products.json?limit=8');
+    }
+
+    const imgEls = [...doc.querySelectorAll('img[src]')];
+    const imgUrls = [...new Set(
+      imgEls.map(i => absUrl(i.getAttribute('src'), org)).filter(u =>
+        u && !u.includes('data:') && !u.includes('base64') &&
+        !u.includes('1x1') && !u.includes('tracking') && !u.includes('pixel') &&
+        !u.includes('.svg') && !u.includes('icon') && !u.includes('logo') &&
+        !u.includes('sprite') && !u.includes('blank') && !u.includes('spacer')
+      )
+      .map(u => { try { const p = new URL(u); p.search = ''; return p.href; } catch { return u; } })
+    )];
+
+    const colors = extractColorsFromCSS(html, doc);
+
+    lbl.textContent = 'Scoring AI visibility...';
+    const data = analyze(doc, raw, shopify);
+    const brandName = extractBrandName(doc, data.domain);
+    const combined = Math.round((data.aiScore * 0.65) + (data.seoScore * 0.35));
+    const critCount = data.issues.filter(i => i.sev === 'danger').length;
+    const warnCount = data.issues.filter(i => i.sev === 'warn').length;
+    const sc = combined >= 70 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
+    const verdict = combined >= 70 ? 'Decent foundation — but gaps are costing you.'
+      : combined >= 45 ? 'Largely invisible to AI search engines.'
+      : 'AI cannot confidently recommend this brand.';
+
+    const avg = (data.aiScore + data.seoScore) / 2;
+    const engines = [
+      { name: 'ChatGPT', pct: Math.round(avg * 0.9), label: avg >= 65 ? 'May appear' : 'Not recommended' },
+      { name: 'Perplexity', pct: Math.round(data.aiScore * 0.85), label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
+      { name: 'Google AI', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9), label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
+      { name: 'Copilot', pct: Math.round(avg * 0.8), label: avg >= 70 ? 'Limited' : 'Not optimized' },
+    ];
+
+    const enginesHtml = engines.map(e =>
+      '<div class="engine-card">' +
+        '<div class="engine-name">' + e.name + '</div>' +
+        '<div class="engine-pct" style="color:' + (e.pct >= 50 ? '#f59e0b' : '#ef4444') + ';">' + e.pct + '<span>%</span></div>' +
+        '<div class="engine-status" style="color:' + (e.pct >= 50 ? '#f59e0b' : '#ef4444') + ';">' + e.label + '</div>' +
+      '</div>'
+    ).join('');
+
+    // OG preview
+    const ogHtml = '<div class="og-preview">' +
+      '<div class="og-img">' + (data.ogImage ? '<img src="' + data.ogImage + '" onerror="this.parentElement.innerHTML=\'<div style=padding:2rem;text-align:center;color:rgba(255,255,255,0.2);font-size:12px>No OG image</div>\'">' : '<div style="padding:2rem;text-align:center;color:rgba(255,255,255,0.2);font-size:12px;">No OG image</div>') +
+      '</div><div class="og-body">' +
+        '<div class="og-domain">' + data.domain + '</div>' +
+        '<div class="og-title">' + (data.ogTitle || '<em style="opacity:0.3">No og:title</em>') + '</div>' +
+        '<div class="og-desc">' + (data.ogDesc ? data.ogDesc.substring(0,120) + '...' : '<em style="opacity:0.3">No og:description</em>') + '</div>' +
+      '</div></div>';
+
+    // Colors
+    const colorsHtml = colors.length
+      ? colors.map(c => '<div><div class="color-swatch" style="background:' + c + '"></div><div class="color-hex">' + c + '</div></div>').join('')
+      : '<div style="color:rgba(255,255,255,0.3);font-size:12px;">No colors extracted</div>';
+
+    // Images
+    const imagesHtml = imgUrls.length
+      ? imgUrls.slice(0, 12).map(u => '<div class="image-thumb"><img src="' + u + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'"/></div>').join('')
+      : '<div style="color:rgba(255,255,255,0.3);font-size:12px;">No images found</div>';
+
+    // Issues
+    const issuesHtml = data.issues.map(issue => {
+      const tags = (issue.tags || []).map(t => {
+        const cls = t.includes('critical') ? 'itag-danger' : t.includes('impact') ? 'itag-warn' : 'itag-info';
+        return '<span class="itag ' + cls + '">' + t + '</span>';
+      }).join('');
+      return '<div class="issue-item">' +
+        '<div class="issue-icon ii-' + issue.sev + '">' + (issue.sev === 'danger' ? '!' : '~') + '</div>' +
+        '<div class="issue-body">' +
+          '<div class="issue-headline">' + issue.headline + '</div>' +
+          '<div class="issue-why">' + issue.why + '</div>' +
+          '<div class="issue-meta">' + tags +
+            (issue.impact ? '<span class="impact-badge">+' + issue.impact + ' pts if fixed</span>' : '') +
+          '</div>' +
+        '</div></div>';
+    }).join('');
+
+    lbl.textContent = 'Building fix plan...';
+
+    // Build report HTML
+    loading.classList.remove('visible');
+    report.innerHTML =
+      '<!-- SCORE HERO -->' +
+      '<div class="score-hero">' +
+        '<div class="score-label">AI Visibility Score</div>' +
+        '<div class="score-brand">' + brandName + '</div>' +
+        '<div class="score-num" style="color:' + sc + ';">' + combined + '<span class="score-denom">/100</span></div>' +
+        '<div class="score-verdict">' + verdict + '</div>' +
+        '<div class="score-stats">' +
+          '<div><div class="sstat-num" style="color:#ef4444;">' + critCount + '</div><div class="sstat-label">Critical</div></div>' +
+          '<div><div class="sstat-num" style="color:#f59e0b;">' + warnCount + '</div><div class="sstat-label">Warnings</div></div>' +
+          '<div><div class="sstat-num" style="color:#00ff97;">' + data.aiScore + '</div><div class="sstat-label">AI Ready</div></div>' +
+          '<div><div class="sstat-num" style="color:#888;">' + data.seoScore + '</div><div class="sstat-label">SEO Base</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- BARS -->' +
+      '<div class="bars">' +
+        [
+          { l: 'Overall AI visibility', v: combined, c: 'background:#00ff97' },
+          { l: 'AI search readiness', v: data.aiScore },
+          { l: 'Technical SEO', v: data.seoScore },
+        ].map(b =>
+          '<div class="bar-row"><div class="bar-lbl"><span>' + b.l + '</span><span>' + b.v + '/100</span></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="' + (b.c || (b.v >= 70 ? 'background:#00cc78' : b.v >= 45 ? 'background:#f59e0b' : 'background:#ef4444')) + ';width:' + b.v + '%;"></div></div></div>'
+        ).join('') +
+      '</div><hr/>' +
+
+      '<!-- ENGINES -->' +
+      '<div class="section-label">AI ENGINE VISIBILITY</div>' +
+      '<div class="section-sub">How each platform currently sees this brand</div>' +
+      '<div class="engines-grid">' + enginesHtml + '</div><hr/>' +
+
+      '<!-- BRAND ASSETS -->' +
+      '<div class="section-label">BRAND ASSETS</div>' +
+      '<div class="section-sub">What AI sees when it crawls this site</div>' +
+      '<div class="assets-grid">' +
+        '<div class="asset-card"><div class="asset-title">OG / Social Preview</div>' + ogHtml + '</div>' +
+        '<div class="asset-card"><div class="asset-title">Brand Colors (' + colors.length + ')</div><div class="color-row">' + colorsHtml + '</div></div>' +
+      '</div>' +
+      (imgUrls.length ? '<div class="asset-card" style="margin-bottom:1.5rem;"><div class="asset-title">' + imgUrls.length + ' Images Found</div><div class="image-grid">' + imagesHtml + '</div></div>' : '') +
+      '<hr/>' +
+
+      '<!-- ISSUES -->' +
+      '<div class="section-label">' + data.issues.length + ' ISSUES FOUND</div>' +
+      '<div class="section-sub">All issues — sorted by severity</div>' +
+      '<div class="issues-list">' + issuesHtml + '</div>' +
+
+      '<!-- FIX PLAN -->' +
+      '<div class="fix-plan" id="fixPlan">' +
+        '<div class="fix-plan-label">AI-POWERED FIX PLAN</div>' +
+        '<div class="fix-plan-content" id="fixPlanContent"><span class="cursor"></span></div>' +
+      '</div>' +
+
+      '<!-- ACTIONS -->' +
+      '<div class="action-row" id="actionRow" style="display:none;">' +
+        '<button class="action-btn" id="copyPlanBtn">Copy fix plan</button>' +
+        '<a class="action-btn" id="emailPlanBtn" href="#">Send to client</a>' +
+        '<button class="action-btn" id="resetBtn">Run another audit</button>' +
+      '</div>';
+
+    report.classList.add('visible');
+    document.title = brandName + ' — Internal Audit — Attomik';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Animate bars
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.bar-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = w; }, 100);
+      });
+    });
+
+    // Stream fix plan from Claude API
+    fixPlanRawMarkdown = '';
+    const content = document.getElementById('fixPlanContent');
+
+    try {
+      const apiRes = await fetch('/api/generate-fix-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: buildFixPlanPrompt(data, data.issues, combined, data.aiScore, data.seoScore),
+        }),
+      });
+
+      const reader = apiRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const evt = JSON.parse(jsonStr);
+            if (evt.type === 'content_block_delta' && evt.delta?.text) {
+              fixPlanRawMarkdown += evt.delta.text;
+              content.innerHTML = renderMarkdown(fixPlanRawMarkdown) + '<span class="cursor"></span>';
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.error('Fix plan error:', err);
+      if (!fixPlanRawMarkdown) {
+        content.innerHTML = '<div style="color:var(--danger);font-size:13px;">Failed to generate fix plan. Error: ' + err.message + '</div>';
+      }
+    }
+
+    // Remove cursor, show actions
+    content.innerHTML = renderMarkdown(fixPlanRawMarkdown);
+    document.getElementById('actionRow').style.display = 'flex';
+
+    // Action buttons
+    document.getElementById('copyPlanBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(fixPlanRawMarkdown).then(() => showToast('Fix plan copied to clipboard'));
+    });
+
+    document.getElementById('emailPlanBtn').href =
+      'mailto:?subject=' + encodeURIComponent('Your AI Visibility Fix Plan — ' + data.domain) +
+      '&body=' + encodeURIComponent(fixPlanRawMarkdown);
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      report.classList.remove('visible');
+      report.innerHTML = '';
+      input.value = '';
+      document.title = 'Internal Audit Tool — Attomik';
+      input.focus();
+    });
+
+  } catch (err) {
+    loading.classList.remove('visible');
+    report.innerHTML = '<div style="text-align:center;padding:4rem 2rem;"><div style="font-size:20px;font-weight:800;margin-bottom:0.5rem;">Error</div><div style="color:rgba(255,255,255,0.5);font-size:14px;">' + err.message + '</div></div>';
+    report.classList.add('visible');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Audit';
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+document.getElementById('auditBtn').addEventListener('click', runAudit);
+document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAudit(); });
+</script>
+</body>
+</html>
