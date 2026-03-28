@@ -85,27 +85,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
 .issue-headline{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;}
 .issue-why{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55;}
 
-/* GATE */
-.gate{
-  background:var(--surface);border:1px solid var(--accent-border);
-  border-radius:14px;padding:2rem;text-align:center;margin-top:1rem;
-  position:relative;overflow:hidden;
-}
-.gate::before{
-  content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-  width:300px;height:200px;background:radial-gradient(circle,rgba(0,255,151,0.07) 0%,transparent 70%);
-  pointer-events:none;
-}
-.gate-pill{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#000;background:var(--accent);display:inline-block;padding:3px 12px;border-radius:99px;margin-bottom:1rem;}
-.gate h3{font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.03em;color:#fff;margin-bottom:0.5rem;line-height:1.2;}
-.gate p{font-size:14px;color:rgba(255,255,255,0.55);margin-bottom:1.25rem;max-width:360px;margin-left:auto;margin-right:auto;}
-.gate-form{display:flex;gap:8px;max-width:420px;margin:0 auto;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px;}
-.gate-form input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;}
-.gate-form input::placeholder{color:var(--muted);}
-.gate-form button{background:var(--accent);color:#000;border:none;border-radius:5px;padding:9px 18px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
-.gate-sent{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);margin-top:12px;letter-spacing:0.04em;}
-.gate-note{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.25);margin-top:8px;letter-spacing:0.03em;}
-
 /* CTA */
 .cta-section{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2.5rem;text-align:center;margin-top:2rem;}
 .cta-section h2{font-family:'Barlow',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.5rem;line-height:1.1;}
@@ -137,12 +116,12 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
 
 <div class="topbar">
   <a href="https://attomik.co" class="topbar-logo">ATTOMIK</a>
-  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=topbar" class="topbar-cta">Audit my brand →</a>
+  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=topbar" class="topbar-cta">Audit my brand &rarr;</a>
 </div>
 
-<div class="shared-banner">
+<div class="shared-banner" id="sharedBanner" style="display:none;">
   <span class="shared-banner-text">You're viewing a shared AI Visibility Report. <strong>Want to see yours?</strong></span>
-  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=banner" class="shared-banner-btn">Run free audit →</a>
+  <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=banner" class="shared-banner-btn">Run free audit &rarr;</a>
 </div>
 
 <div class="wrap" id="main">
@@ -160,10 +139,17 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
 (async () => {
   const token = window.location.pathname.split('/').filter(Boolean).pop();
   const main  = document.getElementById('main');
+  const params = new URLSearchParams(window.location.search);
+  const isVerified = params.get('verified') === 'true';
 
   if (!token) {
     main.innerHTML = '<div class="error"><h2>Report not found</h2><p>This link may be invalid or expired.</p></div>';
     return;
+  }
+
+  // Show shared banner only if NOT the verified owner clicking from email
+  if (!isVerified) {
+    document.getElementById('sharedBanner').style.display = 'flex';
   }
 
   let report;
@@ -172,14 +158,20 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
     if (!res.ok) throw new Error('not found');
     report = await res.json();
   } catch {
-    window._reportData = report;
-  main.innerHTML = `<div class="error">
+    main.innerHTML = `<div class="error">
       <h2>Report not found</h2>
       <p>This link may be invalid or has expired.</p>
-      <a href="https://audit.attomik.co" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:13px;margin-top:1rem;display:inline-block;">Run a free audit →</a>
+      <a href="https://audit.attomik.co" style="color:var(--accent);font-family:'DM Mono',monospace;font-size:13px;margin-top:1rem;display:inline-block;">Run a free audit &rarr;</a>
     </div>`;
     return;
   }
+
+  // Mark lead as verified (fire and forget)
+  fetch('/api/verify-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  }).catch(() => {});
 
   const {
     domain, combined_score: combined, ai_score: aiScore, seo_score: seoScore,
@@ -191,8 +183,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
   const verdict = combined >= 70 ? 'Decent foundation — but gaps exist'
     : combined >= 45 ? 'Largely invisible to AI search' : 'AI cannot confidently recommend this brand';
 
-  const barClass = v => v >= 70 ? 'bf-ok' : v >= 45 ? 'bf-warn' : 'bf-danger';
-
   const enginesHtml = engines.map(e => `
     <div class="engine-card">
       <div class="engine-name">${e.name}</div>
@@ -200,11 +190,8 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
       <div class="engine-status" style="color:${e.pct >= 50 ? '#f59e0b' : '#ef4444'};">${e.label}</div>
     </div>`).join('');
 
-  // Show first 3 issues, gate the rest
-  const visibleIssues = issues.slice(0, 3);
-  const hiddenCount   = issues.length - 3;
-
-  const issuesHtml = visibleIssues.map(issue => `
+  // Show ALL issues — no gate, no blur
+  const issuesHtml = issues.map(issue => `
     <div class="issue-item">
       <div class="issue-icon ii-${issue.sev}">${issue.sev === 'danger' ? '!' : '~'}</div>
       <div>
@@ -212,18 +199,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
         <div class="issue-why">${issue.why}</div>
       </div>
     </div>`).join('');
-
-  const gateHtml = hiddenCount > 0 ? `
-    <div class="gate" id="reportGate">
-      <div class="gate-pill">GET FULL REPORT</div>
-      <h3>${hiddenCount} more issue${hiddenCount > 1 ? 's' : ''} hidden on ${domain}</h3>
-      <p>Enter your email and we'll send you the complete report — all ${issues.length} issues, what they mean, and how to fix them.</p>
-      <div class="gate-form">
-        <input type="email" id="gateEmail" placeholder="your@email.com" />
-        <button onclick="submitGate('${domain}', ${combined}, ${aiScore}, ${seoScore}, ${critCount}, ${warnCount})">Send me the full report →</button>
-      </div>
-      <div class="gate-note">Free. No pitch call. We'll follow up with insights.</div>
-    </div>` : '';
 
   // Update page title
   document.title = `AI Visibility Report: ${domain} scored ${combined}/100 — Attomik`;
@@ -266,22 +241,21 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
     <div class="engines-grid">${enginesHtml}</div>
     <hr/>` : ''}
 
-    <!-- ISSUES -->
+    <!-- ISSUES (FULL — no gate) -->
     <div class="section-label-sm">${issues.length} ISSUES FOUND</div>
     <div class="section-sub" style="margin-bottom:1rem;">Active reasons AI is skipping this brand</div>
     <div class="issues-list">${issuesHtml}</div>
-    ${gateHtml}
 
     <hr/>
 
     <!-- CTA -->
     <div class="cta-section">
-      <h2>IS YOUR BRAND <em>INVISIBLE TO AI?</em></h2>
+      <h2>CAN AI <em>FIND YOUR BRAND?</em></h2>
       <p>Run a free AI visibility audit on your brand. See your score, every issue, and exactly how to fix it.</p>
-      <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=cta&ref=${domain}" class="cta-btn">Audit my brand free →</a>
+      <a href="https://audit.attomik.co?utm_source=shared-report&utm_medium=cta&ref=${domain}" class="cta-btn">Run a free audit &rarr;</a>
     </div>
 
-    <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> · Free AI Search Visibility Scanner</p>
+    <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> &middot; Free AI Search Visibility Scanner</p>
   `;
 
   // Animate bars
@@ -293,52 +267,6 @@ hr{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
     });
   });
 })();
-
-async function submitGate(domain, combined, aiScore, seoScore, critCount, warnCount) {
-  const input = document.getElementById('gateEmail');
-  const email = input?.value.trim();
-  if (!email || !email.includes('@')) {
-    input.style.borderColor = '#ef4444';
-    input.placeholder = 'Enter a valid email';
-    return;
-  }
-
-  const btn = input.nextElementSibling;
-  btn.textContent = 'Sending...';
-  btn.disabled = true;
-
-  try {
-    await fetch('/api/send-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        domain,
-        url: 'https://' + domain,
-        aiScore,
-        seoScore,
-        combined,
-        critCount,
-        warnCount,
-        issues:  window._reportData?.issues_json  || [],
-        engines: window._reportData?.engines_json || [],
-        source:  'shared-report-gate',
-      }),
-    });
-  } catch (err) {
-    console.warn('send failed:', err.message);
-  }
-
-  // Show confirmation regardless — don't block on network
-  const gate = document.getElementById('reportGate');
-  gate.innerHTML = `
-    <div style="padding:0.5rem 0;">
-      <div style="font-size:32px;margin-bottom:0.75rem;">✓</div>
-      <div style="font-family:'Barlow',sans-serif;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.4rem;">Report sent to ${email}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);">Check your inbox — the full report is on its way.</div>
-    </div>
-  `;
-}
 </script>
 </body>
 </html>

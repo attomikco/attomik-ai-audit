@@ -27,6 +27,7 @@ export default async function handler(req) {
     issues  = [],
     engines = [],
     source  = 'gate',
+    token   = null,
   } = body;
 
   if (!email?.includes('@')) {
@@ -49,43 +50,37 @@ export default async function handler(req) {
     console.error('[send-report] captureLead error:', err.message);
   }
 
-  // ── 2. Send report email to user via Resend ───────────────────────────────
-  const scoreColor = combined >= 70 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
-  const scoreLabel = combined >= 70
-    ? 'Decent foundation — but gaps are costing you'
-    : combined >= 45 ? 'Largely invisible to AI search engines'
-    : 'AI cannot confidently recommend your brand';
+  // ── 2. Pre-create shared report if token provided ──────────────────────
+  let reportUrl = 'https://audit.attomik.co';
+  if (token) {
+    try {
+      const origin = new URL(req.url).origin;
+      const shareRes = await fetch(`${origin}/api/create-share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token, email, domain, url,
+          aiScore, seoScore, combined,
+          critCount, warnCount, issues, engines,
+        }),
+      });
+      const shareJson = await shareRes.json();
+      reportUrl = shareJson.url || `https://audit.attomik.co/r/${token}`;
+    } catch (err) {
+      console.error('[send-report] create-share error:', err.message);
+      reportUrl = `https://audit.attomik.co/r/${token}`;
+    }
+    // Append ?verified=true so the original user doesn't see "shared report" banner
+    reportUrl += '?verified=true';
+  }
 
-  const issuesHtml = issues.slice(0, 8).map(issue => `
-    <tr><td style="padding:12px 16px;border-bottom:1px solid #1a1a1a;">
-      <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-        <td width="26" valign="top">
-          <div style="width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-size:11px;font-weight:700;background:${issue.sev === 'danger' ? 'rgba(239,68,68,0.18)' : 'rgba(245,158,11,0.18)'};color:${issue.sev === 'danger' ? '#ef4444' : '#f59e0b'};">
-            ${issue.sev === 'danger' ? '!' : '~'}
-          </div>
-        </td>
-        <td style="padding-left:10px;">
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;">${issue.headline}</div>
-          <div style="font-size:13px;color:#999;line-height:1.5;">${issue.why}</div>
-        </td>
-      </tr></table>
-    </td></tr>`).join('');
-
-  const enginesHtml = engines.map(e => `
-    <td style="padding:0 5px;text-align:center;width:25%;">
-      <div style="background:#111;border:1px solid #222;border-radius:10px;padding:14px 8px;">
-        <div style="font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:6px;">${e.name}</div>
-        <div style="font-size:30px;font-weight:900;letter-spacing:-0.04em;color:${e.pct >= 50 ? '#f59e0b' : '#ef4444'};">${e.pct}<span style="font-size:15px;">%</span></div>
-        <div style="font-size:11px;color:${e.pct >= 50 ? '#f59e0b' : '#ef4444'};margin-top:4px;">${e.label}</div>
-      </div>
-    </td>`).join('');
-
+  // ── 3. Send verification email to user via Resend ─────────────────────
   await sendViaResend({
     from:    `Attomik AI Audit <${FROM_EMAIL}>`,
     to:      [email],
-    subject: `Your AI Visibility Report: ${domain} scored ${combined}/100`,
-    html:    buildReportEmail({ domain, combined, scoreColor, scoreLabel, aiScore, seoScore, critCount, warnCount, issuesHtml, enginesHtml, engines, issues }),
-    text:    `Your AI visibility score for ${domain} is ${combined}/100. ${critCount} critical issues are preventing AI from recommending you. Get your free fix plan: https://attomik.co`,
+    subject: `Your AI Visibility Report is ready — tap to unlock`,
+    html:    buildVerificationEmail({ domain, critCount, reportUrl }),
+    text:    `Your AI visibility report for ${domain} is ready. We found ${critCount} critical issues preventing AI from recommending your brand. View your full report: ${reportUrl}`,
   });
 
   // ── 3. Internal lead notification ─────────────────────────────────────────
@@ -147,7 +142,7 @@ function cors(res) {
   return new Response(res.body, { status: res.status, headers });
 }
 
-function buildReportEmail({ domain, combined, scoreColor, scoreLabel, aiScore, seoScore, critCount, warnCount, issuesHtml, enginesHtml, engines, issues }) {
+function buildVerificationEmail({ domain, critCount, reportUrl }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -157,51 +152,16 @@ function buildReportEmail({ domain, combined, scoreColor, scoreLabel, aiScore, s
 <tr><td align="center" style="padding:32px 16px;">
 <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
-  <tr><td style="padding-bottom:28px;text-align:center;">
+  <tr><td style="padding-bottom:32px;text-align:center;">
     <a href="https://attomik.co" style="font-size:20px;font-weight:900;color:#fff;text-decoration:none;letter-spacing:-0.03em;">ATTOMIK</a>
     <div style="font-family:monospace;font-size:10px;color:#444;margin-top:4px;letter-spacing:0.1em;text-transform:uppercase;">AI Visibility Report</div>
   </td></tr>
 
-  <tr><td style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:16px;padding:36px 32px;text-align:center;">
-    <div style="font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#555;margin-bottom:8px;">AI VISIBILITY SCORE</div>
-    <div style="font-size:80px;font-weight:900;letter-spacing:-0.05em;line-height:1;color:${scoreColor};">${combined}<span style="font-size:32px;color:#333;">/100</span></div>
-    <div style="color:#888;font-size:14px;margin-top:8px;">${scoreLabel}</div>
-    <div style="margin-top:24px;">
-      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr>
-        <td style="padding:0 18px;text-align:center;border-right:1px solid #1e1e1e;"><div style="font-size:26px;font-weight:900;color:#ef4444;">${critCount}</div><div style="font-family:monospace;font-size:10px;color:#555;text-transform:uppercase;margin-top:2px;">Critical</div></td>
-        <td style="padding:0 18px;text-align:center;border-right:1px solid #1e1e1e;"><div style="font-size:26px;font-weight:900;color:#f59e0b;">${warnCount}</div><div style="font-family:monospace;font-size:10px;color:#555;text-transform:uppercase;margin-top:2px;">Warnings</div></td>
-        <td style="padding:0 18px;text-align:center;border-right:1px solid #1e1e1e;"><div style="font-size:26px;font-weight:900;color:#00ff97;">${aiScore}</div><div style="font-family:monospace;font-size:10px;color:#555;text-transform:uppercase;margin-top:2px;">AI Ready</div></td>
-        <td style="padding:0 18px;text-align:center;"><div style="font-size:26px;font-weight:900;color:#888;">${seoScore}</div><div style="font-family:monospace;font-size:10px;color:#555;text-transform:uppercase;margin-top:2px;">SEO Base</div></td>
-      </tr></table>
-    </div>
-  </td></tr>
-
-  <tr><td style="height:12px;"></td></tr>
-
-  ${engines.length ? `
-  <tr><td style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:20px;">
-    <div style="font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#00ff97;margin-bottom:4px;">AI ENGINE VISIBILITY</div>
-    <div style="font-size:13px;color:#666;margin-bottom:14px;">How each platform currently sees your brand</div>
-    <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>${enginesHtml}</tr></table>
-  </td></tr>
-  <tr><td style="height:12px;"></td></tr>` : ''}
-
-  ${issues.length ? `
-  <tr><td style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;overflow:hidden;">
-    <div style="padding:18px 16px 10px;">
-      <div style="font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#00ff97;margin-bottom:2px;">${issues.length} ISSUES FOUND</div>
-      <div style="font-size:13px;color:#666;">Active reasons AI is skipping your brand</div>
-    </div>
-    <table cellpadding="0" cellspacing="0" border="0" width="100%">${issuesHtml}</table>
-  </td></tr>
-  <tr><td style="height:12px;"></td></tr>` : ''}
-
-  <tr><td style="background:#0d0d0d;border:1px solid rgba(0,255,151,0.25);border-radius:16px;padding:32px;text-align:center;">
-    <div style="font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#000;background:#00ff97;display:inline-block;padding:4px 14px;border-radius:99px;margin-bottom:16px;font-weight:700;">FREE DEEPER AUDIT</div>
-    <div style="font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.03em;margin-bottom:8px;line-height:1.15;">We'll show you exactly<br>how to fix this.</div>
-    <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:24px;">Hands-on review of your site, prioritized fix plan — no pitch call, no commitment.</div>
-    <a href="https://attomik.co?utm_source=audit-email&utm_medium=email&utm_campaign=ai-audit&domain=${domain}" style="display:inline-block;background:#00ff97;color:#000;font-size:15px;font-weight:800;padding:14px 32px;border-radius:8px;text-decoration:none;">Get my free fix plan →</a>
-    <div style="margin-top:12px;font-family:monospace;font-size:11px;color:#333;">Or reply to this email — we read every one.</div>
+  <tr><td style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:16px;padding:48px 32px;text-align:center;">
+    <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.04em;margin-bottom:12px;line-height:1.1;">Your report is ready.</div>
+    <div style="font-size:16px;color:#888;line-height:1.7;margin-bottom:36px;max-width:440px;margin-left:auto;margin-right:auto;">We scanned <strong style="color:#fff;">${domain}</strong> and found <strong style="color:#ef4444;">${critCount} critical issue${critCount !== 1 ? 's' : ''}</strong> actively preventing AI from recommending your brand.</div>
+    <a href="${reportUrl}" style="display:inline-block;background:#00ff97;color:#000;font-size:17px;font-weight:800;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:-0.02em;">View my full report →</a>
+    <div style="margin-top:16px;font-family:monospace;font-size:11px;color:#333;">This link is unique to you. It expires in 7 days.</div>
   </td></tr>
 
   <tr><td style="padding:24px 0 0;text-align:center;">

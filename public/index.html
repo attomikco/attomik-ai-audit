@@ -428,6 +428,93 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 body.has-results header { display: none; }
 body.has-results .hero { display: none; }
+body.has-results .landing-only { display: none; }
+
+/* ── LANDING PAGE SECTIONS ───────────────────────────────────────────── */
+.landing-section { max-width: 900px; margin: 0 auto; padding: 4rem 2rem; }
+.landing-section-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem; }
+
+/* SOCIAL PROOF */
+.social-proof {
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem; text-align: center;
+}
+.social-proof-label { font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.35); margin-bottom: 0.75rem; }
+.social-proof-names { font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; line-height: 2; }
+
+/* HOW IT WORKS */
+.hiw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 1.5rem; }
+.hiw-step { border-left: 1px solid var(--border); padding-left: 1.5rem; }
+.hiw-num { font-family: 'Barlow', sans-serif; font-size: 80px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
+.hiw-headline { font-family: 'Barlow', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+.hiw-body { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.65; }
+
+/* WHY AI MATTERS */
+.wai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; margin-top: 1.5rem; }
+.wai-stat { margin-bottom: 1.5rem; }
+.wai-stat-num { font-family: 'Barlow', sans-serif; font-size: 72px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -0.04em; }
+.wai-stat-label { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 0.25rem; }
+.wai-headline { font-family: 'Barlow', sans-serif; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 1rem; }
+.wai-body { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+/* ABOUT ATTOMIK */
+.about-section {
+  background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 4rem 2rem;
+}
+.about-inner { max-width: 680px; margin: 0 auto; text-align: center; }
+.about-headline { font-family: 'Barlow', sans-serif; font-size: 36px; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: -0.03em; margin-bottom: 1.25rem; line-height: 1.1; }
+.about-body { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.75; margin-bottom: 2rem; text-align: left; }
+.about-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; text-align: left; max-width: 480px; margin: 0 auto 2rem; }
+.about-feat { font-size: 14px; color: rgba(255,255,255,0.6); }
+.about-feat span { color: var(--accent); margin-right: 6px; }
+.about-ctas { display: flex; gap: 1.5rem; justify-content: center; align-items: center; flex-wrap: wrap; }
+.about-cta-primary { display: inline-block; background: var(--accent); color: #000; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 800; padding: 13px 28px; border-radius: 8px; text-decoration: none; letter-spacing: -0.02em; }
+.about-cta-secondary { font-family: 'DM Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; }
+.about-cta-secondary:hover { color: rgba(255,255,255,0.6); }
+
+/* CLIENT RESULTS */
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
+.result-brand { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px; }
+.result-text { font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 500; color: #fff; line-height: 1.6; }
+.result-attr { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 12px; }
+
+/* FINAL CTA */
+.final-cta {
+  text-align: center; padding: 5rem 2rem;
+  position: relative; overflow: hidden;
+}
+.final-cta::before {
+  content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(circle, rgba(0,255,151,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.final-cta-headline { font-family: 'Barlow', sans-serif; font-size: 40px; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 0.75rem; position: relative; }
+.final-cta-sub { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 2rem; position: relative; }
+.final-cta .audit-form { position: relative; }
+.final-cta-note { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 1rem; position: relative; }
+
+/* FOOTER */
+.site-footer {
+  border-top: 1px solid var(--border); padding: 2rem;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.site-footer-left, .site-footer-right { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.25); }
+.site-footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
+.site-footer a:hover { color: rgba(255,255,255,0.5); }
+
+@media (max-width: 640px) {
+  .hiw-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .wai-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .wai-stat-num { font-size: 56px; }
+  .results-grid { grid-template-columns: 1fr; }
+  .about-headline { font-size: 28px; }
+  .final-cta-headline { font-size: 28px; }
+  .about-features { grid-template-columns: 1fr; }
+  .site-footer { justify-content: center; text-align: center; }
+}
 
 .report-header {
   display: flex; flex-direction: column; align-items: center;
@@ -718,6 +805,136 @@ body.has-results .hero { display: none; }
   </div>
   <div class="hero-attomik-link">
     A free tool by <a href="https://attomik.co" target="_blank">Attomik</a> — the ecommerce growth partner for CPG brands.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- LANDING PAGE SECTIONS (hidden when body.has-results)                  -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+
+<!-- SOCIAL PROOF BAR -->
+<div class="landing-only social-proof">
+  <div class="social-proof-label">Brands we've grown</div>
+  <div class="social-proof-names">KHLOUD &middot; JOLENE COFFEE &middot; GOOD TWIN &middot; AMASS &middot; GAMEPLAN SKINCARE &middot; LA MONJITA &middot; AFTERDREAM</div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="landing-only">
+  <div class="landing-section">
+    <div class="landing-section-label">HOW IT WORKS</div>
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="hiw-num">01</div>
+        <div class="hiw-headline">Scan your brand</div>
+        <div class="hiw-body">Enter your URL and we scan your site in seconds &mdash; metadata, structure, schema, content signals, everything AI uses to decide if you're worth recommending.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">02</div>
+        <div class="hiw-headline">See your AI visibility score</div>
+        <div class="hiw-body">Get a 0&ndash;100 score across ChatGPT, Perplexity, Google AI Overviews, and Copilot. See exactly which issues are causing AI to skip you.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">03</div>
+        <div class="hiw-headline">Get the fix plan</div>
+        <div class="hiw-body">We send your full report to your inbox. Our team follows up with a free deeper audit and a prioritized fix plan &mdash; no pitch call required.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY AI VISIBILITY MATTERS -->
+<div class="landing-only">
+  <div class="landing-section">
+    <div class="wai-grid">
+      <div>
+        <div class="wai-stat">
+          <div class="wai-stat-num">60%</div>
+          <div class="wai-stat-label">of buyers now use AI before making a purchase decision</div>
+        </div>
+        <div class="wai-stat">
+          <div class="wai-stat-num">3x</div>
+          <div class="wai-stat-label">more likely to buy from a brand AI recommends vs one it doesn't mention</div>
+        </div>
+        <div class="wai-stat">
+          <div class="wai-stat-num">~0%</div>
+          <div class="wai-stat-label">of CPG brands are properly optimized for AI search</div>
+        </div>
+      </div>
+      <div>
+        <div class="landing-section-label">THE PROBLEM</div>
+        <div class="wai-headline">AI doesn't guess. It recommends brands it can find, understand, and trust.</div>
+        <div class="wai-body">When someone asks ChatGPT for the best protein powder, the best skincare for oily skin, or the best canned cocktail &mdash; it pulls from structured data, brand signals, and content it can actually parse. If your site is missing schema markup, has thin content, or lacks E-E-A-T signals, AI skips you entirely. Your competitor shows up instead. Every single time.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHO IS ATTOMIK -->
+<div class="landing-only about-section">
+  <div class="about-inner">
+    <div class="landing-section-label">ABOUT ATTOMIK</div>
+    <div class="about-headline">We don't just audit. We fix it.</div>
+    <div class="about-body">
+      Attomik is a full-service ecommerce growth partner for CPG brands. We handle strategy, execution, and accountability &mdash; so you get results, not reports.<br><br>
+      We built this tool because AI visibility is the fastest-growing gap in ecommerce right now. Most agencies don't even know it exists. We've been fixing it for brands like Khloud, Jolene Coffee, and Good Twin for the past two years.
+    </div>
+    <div class="about-features">
+      <div class="about-feat"><span>&#10003;</span> AI &amp; SEO optimization</div>
+      <div class="about-feat"><span>&#10003;</span> Amazon &amp; marketplace</div>
+      <div class="about-feat"><span>&#10003;</span> Shopify growth strategy</div>
+      <div class="about-feat"><span>&#10003;</span> Content &amp; brand voice</div>
+      <div class="about-feat"><span>&#10003;</span> Paid social &amp; Meta ads</div>
+      <div class="about-feat"><span>&#10003;</span> Analytics &amp; reporting</div>
+      <div class="about-feat"><span>&#10003;</span> Email &amp; retention</div>
+      <div class="about-feat"><span>&#10003;</span> Revenue accountability</div>
+    </div>
+    <div class="about-ctas">
+      <a href="#urlInput" class="about-cta-primary" onclick="event.preventDefault();document.getElementById('urlInput').scrollIntoView({behavior:'smooth'});setTimeout(()=>document.getElementById('urlInput').focus(),500);">Run your free audit &rarr;</a>
+      <a href="https://attomik.co" target="_blank" class="about-cta-secondary">Learn more at attomik.co &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT RESULTS -->
+<div class="landing-only">
+  <div class="landing-section">
+    <div class="landing-section-label">CLIENT RESULTS</div>
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-brand">KHLOUD</div>
+        <div class="result-text">Scaled from launch to 6-figure monthly revenue on Shopify within 90 days of engagement.</div>
+        <div class="result-attr">&mdash; Ecommerce growth &amp; AI visibility</div>
+      </div>
+      <div class="result-card">
+        <div class="result-brand">JOLENE COFFEE</div>
+        <div class="result-text">Grew email revenue by 3x and cut customer acquisition cost by 40% through retention strategy and AI search optimization.</div>
+        <div class="result-attr">&mdash; Full-service retainer</div>
+      </div>
+      <div class="result-card">
+        <div class="result-brand">GOOD TWIN</div>
+        <div class="result-text">Took their sober-curious brand from invisible to ranking in AI recommendations for their category within 60 days.</div>
+        <div class="result-attr">&mdash; AI visibility &amp; SEO</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL CTA -->
+<div class="landing-only final-cta">
+  <div class="final-cta-headline">Find out if AI can find your brand.</div>
+  <div class="final-cta-sub">Free. Takes 30 seconds. No pitch call.</div>
+  <div class="audit-form" style="position:relative;">
+    <input type="text" id="urlInput2" placeholder="https://yourbrand.com" />
+    <button class="audit-btn" id="auditBtn2">Check my AI visibility &rarr;</button>
+  </div>
+  <div class="final-cta-note">Used by CPG brands doing $1M&ndash;$50M in ecommerce revenue.</div>
+</div>
+
+<!-- FOOTER -->
+<div class="landing-only site-footer">
+  <div class="site-footer-left">&copy; 2025 Attomik. All rights reserved.</div>
+  <div class="site-footer-right">
+    <a href="https://attomik.co" target="_blank">attomik.co</a> &nbsp;&middot;&nbsp; <a href="mailto:pablo@attomik.co">pablo@attomik.co</a>
   </div>
 </div>
 
@@ -1726,7 +1943,7 @@ async function runAudit() {
         const input = document.getElementById('gateEmail');
         if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') { document.getElementById('vrBtn').click(); } });
       }));
-      document.getElementById('vrBtn').addEventListener('click', () => {
+      async function handleGateSubmit() {
         const email = document.getElementById('gateEmail')?.value.trim();
         if (!email || !email.includes('@')) {
           document.getElementById('gateEmail').style.borderColor = '#ef4444';
@@ -1734,30 +1951,106 @@ async function runAudit() {
           return;
         }
         window._gatedEmail = email;
-        sendReport({ email, source: 'gate' });
 
-        // Show sending animation
+        // Generate a share token for the verification link
+        const verifyToken = generateToken();
+
+        // Build engines array for the API
+        const avg = (data.aiScore + data.seoScore) / 2;
+        const gateEngines = [
+          { name: 'ChatGPT',   pct: Math.round(avg * 0.9),                                         label: avg >= 65 ? 'May appear' : 'Not recommended' },
+          { name: 'Perplexity', pct: Math.round(data.aiScore * 0.85),                               label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
+          { name: 'Google AI',  pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9), label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
+          { name: 'Copilot',    pct: Math.round(avg * 0.8),                                         label: avg >= 70 ? 'Limited' : 'Not optimized' },
+        ];
+
+        // Show sending animation immediately
         const slide = document.getElementById('finalSlide');
         if (slide) {
           slide.style.transition = 'opacity 0.3s ease';
           slide.style.opacity = '0';
-          setTimeout(() => {
-            slide.innerHTML =
-              '<div style="text-align:center;">' +
-                '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1.5rem;">SENDING YOUR RESULTS</div>' +
-                '<div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:1.5rem;">' +
-                  [0,1,2].map(i => '<div style="width:10px;height:10px;border-radius:50%;background:#00ff97;animation:dot-bounce 0.8s ease-in-out ' + (i*0.15) + 's infinite alternate;"></div>').join('') +
-                '</div>' +
-                '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.6);">Sending to ' + email + '</div>' +
-              '</div>' +
-              '<style>@keyframes dot-bounce{from{transform:translateY(0);opacity:0.4}to{transform:translateY(-10px);opacity:1}}</style>';
-            slide.style.opacity = '1';
-            setTimeout(resolve, 1800);
-          }, 320);
-        } else {
-          resolve();
         }
-      });
+
+        // Fire API call (don't await — show UI immediately)
+        fetch('/api/send-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email, name: null, source: 'gate',
+            token: verifyToken,
+            domain: data.domain,
+            url: document.getElementById('urlInput')?.value.trim() || data.domain,
+            aiScore: data.aiScore,
+            seoScore: data.seoScore,
+            combined,
+            critCount,
+            warnCount: data.issues.filter(i => i.sev === 'warn').length,
+            issues: data.issues,
+            engines: gateEngines,
+          }),
+        }).catch(err => console.warn('sendReport failed silently:', err.message));
+
+        // Show confirmation screen after brief fade
+        setTimeout(() => {
+          if (slide) {
+            slide.innerHTML =
+              '<div style="text-align:center;max-width:440px;">' +
+                '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-0.04em;color:#00ff97;margin-bottom:0.75rem;line-height:1.1;">Your full report is ready.</div>' +
+                '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:2rem;">We just sent your AI visibility breakdown to <span style="font-family:\'DM Mono\',monospace;color:#fff;">' + email + '</span>. Check your inbox — it usually arrives in under a minute.</div>' +
+                '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:2rem;">Wrong email? <a href="#" id="changeEmailLink" style="color:rgba(255,255,255,0.5);text-decoration:underline;cursor:pointer;">Change it \u2192</a></div>' +
+                '<a href="#" id="runAnotherLink" style="font-family:\'Barlow\',sans-serif;font-size:14px;color:rgba(255,255,255,0.35);text-decoration:none;">\u2190 Run another audit</a>' +
+              '</div>';
+            slide.style.opacity = '1';
+
+            // "Run another audit" closes the overlay and resets
+            document.getElementById('runAnotherLink')?.addEventListener('click', function(ev) {
+              ev.preventDefault();
+              const ov = document.getElementById('scanOverlay');
+              ov.style.transition = 'opacity 0.4s ease';
+              ov.style.opacity = '0';
+              setTimeout(() => {
+                ov.classList.remove('visible');
+                ov.style.cssText = '';
+                document.getElementById('urlInput').value = '';
+                // Re-enable the audit button
+                const auditBtn = document.getElementById('auditBtn');
+                if (auditBtn) { auditBtn.disabled = false; auditBtn.textContent = 'Check my AI visibility \u2192'; }
+                window.scrollTo({ top: 0 });
+                setTimeout(() => document.getElementById('urlInput').focus(), 200);
+              }, 420);
+            });
+
+            // "Change it" resets the gate
+            document.getElementById('changeEmailLink')?.addEventListener('click', function(ev) {
+              ev.preventDefault();
+              window._gatedEmail = null;
+              slide.style.opacity = '0';
+              setTimeout(() => {
+                // Re-render the original gate
+                slide.innerHTML =
+                  '<div style="text-align:center;max-width:480px;">' +
+                    '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">YOUR REPORT IS READY</div>' +
+                    '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">SEE EVERY GAP.<br>GET THE FIX PLAN.</div>' +
+                    '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send the full report straight to your inbox — plus a free deeper audit from our team.</div>' +
+                    '<div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto 12px;">' +
+                      '<input id="gateEmail" type="email" placeholder="Enter your work email" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:13px 16px;color:#fff;font-family:\'Barlow\',sans-serif;font-size:15px;outline:none;text-align:center;" />' +
+                      '<button id="vrBtn2" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me my results \u2192</button>' +
+                    '</div>' +
+                  '</div>';
+                slide.style.opacity = '1';
+                document.getElementById('gateEmail')?.focus();
+                // Re-bind submit for the re-rendered gate
+                document.getElementById('vrBtn2')?.addEventListener('click', handleGateSubmit);
+                document.getElementById('gateEmail')?.addEventListener('keydown', function(e) {
+                  if (e.key === 'Enter') handleGateSubmit();
+                });
+              }, 320);
+            });
+          }
+          // Do NOT resolve — user stays on confirmation screen (no report shown)
+        }, 320);
+      }
+      document.getElementById('vrBtn').addEventListener('click', handleGateSubmit);
     });
 
     // Hide hero BEFORE closing overlay to prevent flash
@@ -1996,6 +2289,19 @@ function copyShareUrl(url) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('auditBtn').addEventListener('click', runAudit);
   document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAudit(); });
+
+  // Wire up the bottom CTA audit form to mirror the hero form
+  const btn2 = document.getElementById('auditBtn2');
+  const input2 = document.getElementById('urlInput2');
+  if (btn2 && input2) {
+    function runFromBottom() {
+      document.getElementById('urlInput').value = input2.value;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(runAudit, 400);
+    }
+    btn2.addEventListener('click', runFromBottom);
+    input2.addEventListener('keydown', e => { if (e.key === 'Enter') runFromBottom(); });
+  }
 });
 </script>
 </body>
