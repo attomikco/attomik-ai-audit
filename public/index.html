@@ -1459,7 +1459,8 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
   return `
     <!-- REPORT HEADER -->
     <div class="report-header reveal d1">
-      <a href="https://attomik.co" target="_blank" rel="noopener" style="display:flex;align-items:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3162.208309618669 909.2179303030312" style="height:36px;width:auto;display:block;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.45);margin-bottom:0.75rem;">AI VISIBILITY REPORT</div>
+      <a href="https://attomik.co" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3162.208309618669 909.2179303030312" style="height:32px;width:auto;display:block;">
         <g transform="scale(8.11041548093341) translate(10, 10)">
           <g transform="matrix(1.0466489028630275,0,0,1.0466489028630275,-6.279812066960743,-6.279893417178165)" fill="#ffffff">
             <g transform="translate(0,-952.36218)">
@@ -1473,7 +1474,7 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
           </g>
         </g>
       </svg></a>
-      <div class="report-header-sub">AI Visibility Report · ${brandName || data.domain}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,255,255,0.45);margin-top:0.5rem;">${brandName || data.domain}</div>
       <button class="share-btn" id="shareBtn" onclick="shareReport()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="13" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="2.5" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="8" x2="11.5" y2="3.2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="8" x2="11.5" y2="12.8" stroke="currentColor" stroke-width="1.3"/></svg>
         Share report
@@ -1587,25 +1588,12 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
     </div>
 
     <!-- FINAL CTA -->
-    <div class="cta-section">
-      <div class="cta-badge">FREE 30-DAY AUDIT</div>
-      <h2>STOP LOSING SALES TO AI<br><em>THAT CAN'T FIND YOU.</em></h2>
-      <p>Send us your URL and we'll send back a free snapshot of exactly where you're losing AI visibility — no commitment, no pitch call required.</p>
-      <div class="cta-features">
-        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Free deeper audit — no strings attached</div>
-        <div class="cta-feat"><span class="cta-feat-icon">✓</span>We identify your biggest quick wins first</div>
-        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Shopify & ecommerce specialists</div>
-        <div class="cta-feat"><span class="cta-feat-icon">✓</span>Only pay if you want us to fix it</div>
-      </div>
-      <div id="ctaFormWrap">
-        <div class="cta-inputs">
-          <input class="cta-input" id="ctaName" type="text" placeholder="Your name" />
-          <input class="cta-input" id="ctaEmail" type="email" placeholder="Work email" />
-        </div>
-        <button class="cta-submit" id="ctaSubmitBtn">Get my free deeper audit →</button>
-      </div>
-      <p class="cta-note">Takes 30 seconds. We'll follow up with insights, not a sales pitch.</p>
-      <a class="cta-book" href="https://attomik.co">Or book a call directly →</a>
+    <div class="cta-section" style="text-align:center;max-width:560px;margin:2rem auto 0;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:1rem;">YOUR NEXT STEP</div>
+      <h2 style="font-size:32px;letter-spacing:-0.03em;line-height:1.15;margin-bottom:0.75rem;">Your score is fixable.<br><em>We've done it before.</em></h2>
+      <p style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;max-width:460px;margin:0 auto 1.5rem;">We'll review your ${data.domain} results and reach out within 1 business day with a free fix plan. No forms, no pitch calls — just a direct line to our team.</p>
+      <a href="mailto:pablo@attomik.co?subject=AI%20Audit%3A%20${encodeURIComponent(data.domain)}%20scored%20${combined}%2F100&body=Hi%20Pablo%2C%0D%0A%0D%0AI%20just%20ran%20an%20AI%20visibility%20audit%20on%20${encodeURIComponent(data.domain)}%20and%20scored%20${combined}%2F100.%0D%0A%0D%0AI%20have%20${critCount}%20critical%20issues%20and%20would%20love%20to%20talk%20about%20fixing%20them.%0D%0A%0D%0A%5BYour%20name%5D%0D%0A%5BYour%20company%5D" style="display:inline-block;background:var(--accent);color:#000;font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;padding:14px 32px;border-radius:8px;text-decoration:none;letter-spacing:-0.02em;">Contact the Attomik team \u2192</a>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);margin-top:10px;">One click sends your audit results directly to our team. We'll reach out within 1 business day.</div>
     </div>
 
     <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> · Free AI Search Visibility Scanner</p>
