@@ -527,9 +527,9 @@ body.has-results .landing-only { display: none; }
 }
 .try-another { text-align: center; padding: 2rem 0 1rem; }
 .try-another-btn {
-  background: transparent; border: 1px solid var(--border2);
-  color: var(--muted); font-family: 'DM Mono', monospace;
-  font-size: 12px; padding: 10px 24px; border-radius: 6px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.35);
+  color: #ffffff; font-family: 'DM Mono', monospace;
+  font-size: 13px; padding: 11px 28px; border-radius: 6px;
   cursor: pointer; transition: border-color 0.15s, color 0.15s; letter-spacing: 0.04em;
 }
 .try-another-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -1086,6 +1086,36 @@ async function fetchJSON(url) {
 
 function parseHTML(html) { return (new DOMParser()).parseFromString(html, 'text/html'); }
 
+function decodeHtmlEntities(str) {
+  const txt = document.createElement('textarea');
+  txt.innerHTML = str;
+  return txt.value;
+}
+
+function extractBrandName(doc, domain) {
+  // 1. Try og:site_name
+  const ogSiteName =
+    doc.querySelector('meta[property="og:site_name"]')?.getAttribute('content') ||
+    doc.querySelector('meta[content][property="og:site_name"]')?.getAttribute('content');
+  if (ogSiteName && ogSiteName.trim()) return decodeHtmlEntities(ogSiteName.trim());
+
+  // 2. Fallback to title tag — strip common suffixes
+  const titleEl = doc.querySelector('title');
+  if (titleEl) {
+    var title = titleEl.textContent.trim();
+    title = title.replace(/\s*[\|–—\-]\s*(Home|Official Site|Welcome|Shop|Store|Online|Official|Website).*$/i, '');
+    title = title.replace(/\s*[\|–—]\s*.+$/, '');
+    var dashParts = title.split(/\s*-\s*/);
+    if (dashParts.length > 1 && dashParts[0].trim().length > 0) {
+      title = dashParts[0].trim();
+    }
+    if (title.trim()) return decodeHtmlEntities(title.trim());
+  }
+
+  // 3. Final fallback — use domain
+  return domain;
+}
+
 function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } }
 function getOrigin(url) { try { return new URL(url).origin; } catch { return ''; } }
 
@@ -1306,7 +1336,7 @@ function engineStatus(ai, seo) {
   ].map(e => `<div class="engine-card"><div class="engine-name">${e.name}</div><div class="engine-status ${e.cls}">${e.label}</div></div>`).join('');
 }
 
-function buildResults(data, colors, imgUrls, shopify, url, isShopify) {
+function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName) {
   const { aiScore, seoScore, issues, domain, titleTxt, metaTxt, ogTitle, ogDesc, ogImage, words } = data;
   const combined = Math.round((aiScore * 0.65) + (seoScore * 0.35));
   const sc = scoreClass(combined), seoC = scoreClass(seoScore), aiC = scoreClass(aiScore);
@@ -1315,11 +1345,12 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify) {
   const warnCount = issues.filter(i => i.sev === 'warn').length;
 
   // Verdict messaging based on score
+  const displayName = brandName || domain;
   const verdictHeadline = combined >= 70
-    ? `${domain} has decent AI visibility — but gaps are costing you.`
+    ? `${displayName} has decent AI visibility — but gaps are costing you.`
     : combined >= 45
-    ? `${domain} is largely invisible to AI search engines.`
-    : `AI assistants cannot confidently recommend ${domain}.`;
+    ? `${displayName} is largely invisible to AI search engines.`
+    : `AI assistants cannot confidently recommend ${displayName}.`;
 
   const verdictSub = combined >= 70
     ? `You have a foundation, but ${critCount + warnCount} issues are actively blocking AI recommendations. Competitors who fix these will outrank you.`
@@ -1428,7 +1459,7 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify) {
           </g>
         </g>
       </svg></a>
-      <div class="report-header-sub">AI Visibility Report · ${data.domain}</div>
+      <div class="report-header-sub">AI Visibility Report · ${brandName || data.domain}</div>
       <button class="share-btn" id="shareBtn" onclick="shareReport()">
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="13" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="2.5" cy="8" r="1.5" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="8" x2="11.5" y2="3.2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="8" x2="11.5" y2="12.8" stroke="currentColor" stroke-width="1.3"/></svg>
         Share report
@@ -1670,6 +1701,7 @@ async function runAudit() {
     await new Promise(r => setTimeout(r, 0));
 
     const data = analyze(doc, raw, shopify);
+    const brandName = extractBrandName(doc, data.domain);
 
     // Enforce minimum 5 seconds of scan drama
     const elapsed = Date.now() - scanStart;
@@ -1745,7 +1777,8 @@ async function runAudit() {
     inner.innerHTML =
       '<div id="bld" style="text-align:center;opacity:0;transition:opacity 0.5s ease;">' +
         '<div style="font-family:\'DM Mono\',monospace;font-size:14px;letter-spacing:0.12em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:2rem;">BUILDING YOUR RESULTS</div>' +
-        '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(38px,7vw,80px);font-weight:800;letter-spacing:-0.04em;color:#fff;line-height:1;margin-bottom:2.5rem;">' + data.domain + '</div>' +
+        '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(38px,7vw,80px);font-weight:800;letter-spacing:-0.04em;color:#fff;line-height:1;margin-bottom:0.5rem;">' + brandName + '</div>' +
+        '<div style="font-family:\'DM Mono\',monospace;font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:2rem;">' + data.domain + '</div>' +
         '<div style="width:260px;height:2px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;margin:0 auto 1rem;">' +
           '<div id="bbar" style="height:100%;width:0;background:#00ff97;border-radius:99px;transition:width 2.5s cubic-bezier(0.4,0,0.2,1);"></div>' +
         '</div>' +
@@ -1997,7 +2030,7 @@ async function runAudit() {
               '<div style="text-align:center;max-width:440px;">' +
                 '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-0.04em;color:#00ff97;margin-bottom:0.75rem;line-height:1.1;">Your full report is ready.</div>' +
                 '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:2rem;">We just sent your AI visibility breakdown to <span style="font-family:\'DM Mono\',monospace;color:#fff;">' + email + '</span>. Check your inbox — it usually arrives in under a minute.</div>' +
-                '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:2rem;">Wrong email? <a href="#" id="changeEmailLink" style="color:rgba(255,255,255,0.5);text-decoration:underline;cursor:pointer;">Change it \u2192</a></div>' +
+                '<div style="margin-bottom:2rem;"><a href="#" id="changeEmailLink" style="display:inline-block;font-family:\'DM Mono\',monospace;font-size:12px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.25);padding:6px 16px;border-radius:6px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#00ff97\';this.style.color=\'#00ff97\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.25)\';this.style.color=\'#fff\'">&#9998; Wrong email? Change it</a></div>' +
                 '<a href="#" id="runAnotherLink" style="font-family:\'Barlow\',sans-serif;font-size:14px;color:rgba(255,255,255,0.35);text-decoration:none;">\u2190 Run another audit</a>' +
               '</div>';
             slide.style.opacity = '1';
@@ -2086,8 +2119,9 @@ async function runAudit() {
       })(),
     };
     window._shareUrl = null; // reset share URL for new report
-    wrap.innerHTML = buildResults(data, colors, imgUrls, shopify, raw, isShopify);
+    wrap.innerHTML = buildResults(data, colors, imgUrls, shopify, raw, isShopify, brandName);
     wrap.classList.add('visible');
+    document.title = brandName + ' AI Visibility Report \u2014 Attomik';
 
     // Add "try another URL" button at bottom
     const tryAnother = document.createElement('div');
