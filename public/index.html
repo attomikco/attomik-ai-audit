@@ -472,6 +472,9 @@ body.has-results .landing-only { display: none; }
 .about-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; text-align: left; max-width: 480px; margin: 0 auto 2rem; }
 .about-feat { font-size: 14px; color: rgba(255,255,255,0.6); }
 .about-feat span { color: var(--accent); margin-right: 6px; }
+.about-features-row { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.75rem; }
+.about-feat-inline { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.5); }
+.about-feat-inline span { color: var(--accent); margin-right: 4px; }
 .about-ctas { display: flex; gap: 1.5rem; justify-content: center; align-items: center; flex-wrap: wrap; }
 .about-cta-primary { display: inline-block; background: var(--accent); color: #000; font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 800; padding: 13px 28px; border-radius: 8px; text-decoration: none; letter-spacing: -0.02em; }
 .about-cta-secondary { font-family: 'DM Mono', monospace; font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; }
@@ -517,6 +520,7 @@ body.has-results .landing-only { display: none; }
   .about-headline { font-size: 28px; }
   .final-cta-headline { font-size: 28px; }
   .about-features { grid-template-columns: 1fr; }
+  .about-features-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; justify-items: start; }
   .site-footer { justify-content: center; text-align: center; }
 }
 
@@ -871,23 +875,20 @@ body.has-results .landing-only { display: none; }
   <div class="about-inner">
     <div class="landing-section-label">ABOUT ATTOMIK</div>
     <div class="about-headline">We don't just audit. We fix it.</div>
-    <div class="about-body">
-      Attomik is a full-service ecommerce growth partner for CPG brands. We handle strategy, execution, and accountability &mdash; so you get results, not reports.<br><br>
-      We built this tool because AI visibility is the fastest-growing gap in ecommerce right now. Most agencies don't even know it exists. We've been fixing it for brands like Khloud, Jolene Coffee, and Good Twin for the past two years.
+    <div class="about-body">Attomik is a revenue-accountable ecommerce partner for CPG brands. Strategy, execution, and results &mdash; under one roof.</div>
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.35);margin-bottom:0.5rem;">BRANDS WE'VE WORKED WITH</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;">KHLOUD &middot; JOLENE COFFEE &middot; GOOD TWIN &middot; AMASS &middot; GAMEPLAN SKINCARE</div>
     </div>
-    <div class="about-features">
-      <div class="about-feat"><span>&#10003;</span> AI &amp; SEO optimization</div>
-      <div class="about-feat"><span>&#10003;</span> Amazon &amp; marketplace</div>
-      <div class="about-feat"><span>&#10003;</span> Shopify growth strategy</div>
-      <div class="about-feat"><span>&#10003;</span> Content &amp; brand voice</div>
-      <div class="about-feat"><span>&#10003;</span> Paid social &amp; Meta ads</div>
-      <div class="about-feat"><span>&#10003;</span> Analytics &amp; reporting</div>
-      <div class="about-feat"><span>&#10003;</span> Email &amp; retention</div>
-      <div class="about-feat"><span>&#10003;</span> Revenue accountability</div>
+    <div class="about-features-row">
+      <div class="about-feat-inline"><span>&#10003;</span> AI &amp; SEO</div>
+      <div class="about-feat-inline"><span>&#10003;</span> Shopify growth</div>
+      <div class="about-feat-inline"><span>&#10003;</span> Paid social &amp; Meta</div>
+      <div class="about-feat-inline"><span>&#10003;</span> Email &amp; retention</div>
     </div>
     <div class="about-ctas">
       <a href="#urlInput" class="about-cta-primary" onclick="event.preventDefault();document.getElementById('urlInput').scrollIntoView({behavior:'smooth'});setTimeout(()=>document.getElementById('urlInput').focus(),500);">Run your free audit &rarr;</a>
-      <a href="https://attomik.co" target="_blank" class="about-cta-secondary">Learn more at attomik.co &rarr;</a>
+      <a href="https://attomik.co" target="_blank" class="about-cta-secondary">attomik.co &rarr;</a>
     </div>
   </div>
 </div>
