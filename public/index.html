@@ -1731,10 +1731,6 @@ async function runAudit() {
     await new Promise(r => setTimeout(r, 0));
 
     const data = analyze(doc, raw, shopify);
-    // TEST OVERRIDE — force high scores for demo (REVERT THIS)
-    data.aiScore = 88;
-    data.seoScore = 85;
-    data.issues = data.issues.filter(i => i.sev !== 'danger');
     const brandName = extractBrandName(doc, data.domain);
 
     // Enforce minimum 5 seconds of scan drama
@@ -1939,10 +1935,10 @@ async function runAudit() {
     // SLIDES — AI Engines one by one
     const avg = (data.aiScore + data.seoScore) / 2;
     const engines = [
-      { name: 'ChatGPT', desc: 'When shoppers ask "what\'s the best X" — ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear' : 'Not being recommended', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: 84 },
-      { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', color: data.aiScore >= 60 ? '#f59e0b' : '#ef4444', pct: 81 },
-      { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', color: (data.seoScore >= 65 && data.aiScore >= 55) ? '#f59e0b' : '#ef4444', pct: 86 },
-      { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', color: avg >= 70 ? '#f59e0b' : '#ef4444', pct: 79 },
+      { name: 'ChatGPT', desc: 'When shoppers ask "what\'s the best X" — ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear' : 'Not being recommended', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.9) },
+      { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', color: data.aiScore >= 60 ? '#f59e0b' : '#ef4444', pct: Math.round(data.aiScore * 0.85) },
+      { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', color: (data.seoScore >= 65 && data.aiScore >= 55) ? '#f59e0b' : '#ef4444', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9) },
+      { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', color: avg >= 70 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.8) },
     ];
 
     for (const e of engines) {
