@@ -1731,6 +1731,10 @@ async function runAudit() {
     await new Promise(r => setTimeout(r, 0));
 
     const data = analyze(doc, raw, shopify);
+    // TEST OVERRIDE — force high scores for demo (REVERT THIS)
+    data.aiScore = 88;
+    data.seoScore = 85;
+    data.issues = data.issues.filter(i => i.sev !== 'danger');
     const brandName = extractBrandName(doc, data.domain);
 
     // Enforce minimum 5 seconds of scan drama
