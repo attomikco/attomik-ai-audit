@@ -827,7 +827,7 @@ body.has-results .landing-only { display: none; }
     </a>
   </div>
   <div class="hero-tag"><span class="tag-dot"></span>AI Search Visibility Audit</div>
-  <h1>Can ChatGPT, Perplexity &amp; Google AI <em>Find Your Brand?</em></h1>
+  <h1>Can ChatGPT, Perplexity &amp; Google AI <em>Find Your Business?</em></h1>
   <p class="hero-sub">ChatGPT, Perplexity, Copilot &amp; Google AI are the new search. Most brands are invisible — find out where you stand in 30 seconds.</p>
   <div class="audit-form">
     <input type="text" id="urlInput" placeholder="yourwebsite.com" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="url" />
@@ -1768,14 +1768,25 @@ async function submitFixForm(domain, combined, critCount) {
   const form = document.getElementById('fixForm');
   if (form) {
     form.innerHTML = `
-      <div style="text-align:center;padding:1rem 0;">
-        <div style="font-size:28px;margin-bottom:0.75rem;">\u2713</div>
-        <div style="font-family:'Barlow',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:6px;">
-          We got it. Talk soon, ${name.split(' ')[0]}.
-        </div>
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);">
-          Check your inbox — we'll follow up within 1 business day.
-        </div>
+      <div style="text-align:center;padding:1.5rem 0;">
+        <div style="
+          width:48px;height:48px;border-radius:50%;
+          background:rgba(0,255,151,0.12);border:1px solid rgba(0,255,151,0.3);
+          display:flex;align-items:center;justify-content:center;
+          margin:0 auto 1rem;font-size:20px;
+        ">\u2713</div>
+        <div style="
+          font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;
+          color:#fff;letter-spacing:-0.03em;margin-bottom:0.5rem;line-height:1.2;
+        ">You're on our radar, ${name.split(' ')[0]}.</div>
+        <div style="
+          font-size:14px;color:rgba(255,255,255,0.7);line-height:1.65;
+          max-width:340px;margin:0 auto 1rem;
+        ">Someone from the Attomik team will review your results for <strong style="color:#fff;">${domain}</strong> and reach out within 1 business day.</div>
+        <div style="
+          font-family:'DM Mono',monospace;font-size:11px;
+          color:rgba(255,255,255,0.3);line-height:1.6;
+        ">We'll come prepared — no generic pitch,<br>just specific fixes for your brand.</div>
       </div>`;
   }
 }
