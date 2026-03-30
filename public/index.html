@@ -274,9 +274,9 @@ header { display: none; }
 .score-grade { font-size: 13px; color: var(--muted); }
 
 /* ENGINE STATUS */
-.engines-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+.engines-row { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 2rem; }
 .engine-card {
-  flex: 1; min-width: 120px;
+  flex: 1; min-width: 0;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 12px 14px;
 }
@@ -369,7 +369,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .audit-btn { width: 100%; text-align: center; height: 52px; font-size: 16px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .image-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-  .engines-row { flex-direction: column; }
+  .engines-row { flex-wrap: wrap; }
+  .engines-row .engine-card { flex: 1 1 calc(50% - 4px); min-width: calc(50% - 4px); }
   .verdict-stats { gap: 1rem; }
   .cta-section { padding: 2rem 1.25rem; }
   .scan-inner { padding: 1rem; }
