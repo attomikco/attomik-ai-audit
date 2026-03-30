@@ -1603,6 +1603,7 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
       <div class="big-section-sub">How each AI platform currently sees your brand</div>
     </div>
 
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:2rem;">
     ${(() => {
       const avg = (aiScore + seoScore) / 2;
       const engineColor = (v) => v >= 80 ? 'ok' : v >= 45 ? 'warn' : 'danger';
@@ -1627,6 +1628,7 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
           </div>
         </div>`).join('');
     })()}
+    </div>
 
     <!-- WHAT AI SAYS -->
     <div class="reveal d8" style="margin-top:2.5rem;">
