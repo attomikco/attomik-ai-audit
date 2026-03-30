@@ -1468,6 +1468,20 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
   const reportId = 'ATM-' + Math.floor(1000 + Math.random() * 9000) + '-' + data.domain.replace(/[^a-z0-9]/gi,'').slice(-3).toUpperCase();
   const reportDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+  const aiSaysResponse = combined >= 80
+    ? `"${brandName || data.domain} is a recognized brand in its space. They offer a range of products and are known for their online presence and quality. You can find them at ${data.domain}."`
+    : combined >= 60
+    ? `"I've seen some references to ${data.domain} online, though I don't have detailed information about their specific products or brand positioning. You may want to visit their website directly for more information."`
+    : combined >= 40
+    ? `"I don't have reliable information about ${data.domain} in my training data. I'd recommend searching directly or checking recent reviews to learn more about this brand."`
+    : `"I'm not familiar with ${data.domain}. I don't have enough information to make a recommendation about this brand."`;
+  const aiSaysColor = combined >= 80 ? 'rgba(255,255,255,0.85)' : combined >= 60 ? 'rgba(255,255,255,0.7)' : combined >= 40 ? '#f59e0b' : '#ef4444';
+  const aiSaysLabel = combined >= 80 ? '\u2713 ChatGPT has strong knowledge of your brand.'
+    : combined >= 60 ? '\u26A0\uFE0F ChatGPT has limited knowledge of your brand.'
+    : combined >= 40 ? '\u26A0\uFE0F ChatGPT struggles to find your brand.'
+    : '\uD83D\uDEA8 ChatGPT does not know your brand. This is what your customers see.';
+  const aiSaysLabelColor = combined >= 80 ? '#00cc78' : combined >= 60 ? 'rgba(255,255,255,0.5)' : '#f59e0b';
+
   const SHARED_MODE = window._sharedMode || false;
   const VISIBLE_ISSUES = SHARED_MODE ? 3 : issues.length;
 
@@ -1617,21 +1631,17 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
       <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.25rem;">WHAT AI SAYS ABOUT YOUR BRAND</div>
       <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">Simulated response when someone asks ChatGPT about your brand</div>
       <div style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.5rem;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
-          <div style="width:10px;height:10px;border-radius:50%;background:var(--ok);"></div>
-          <span style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.6);">ChatGPT</span>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#00ff97;"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.5);">ChatGPT</span>
         </div>
-        <div style="font-size:15px;line-height:1.7;color:${combined >= 80 ? 'rgba(255,255,255,0.85)' : combined >= 60 ? 'rgba(255,255,255,0.7)' : combined >= 40 ? 'var(--warn)' : 'var(--danger)'};">
-          ${combined >= 80
-            ? `${displayName} is a well-known brand in their space. They offer products and services and are recognized for their quality and online presence. You can find them at ${data.domain}.`
-            : combined >= 60
-            ? `I've seen some references to ${data.domain} online, though I don't have detailed information about their specific products or brand positioning. You may want to visit their website directly for more information.`
-            : combined >= 40
-            ? `I don't have reliable information about ${data.domain} in my training data. I'd recommend searching directly or checking recent reviews.`
-            : `I'm not familiar with ${data.domain}. I don't have enough information to make a recommendation about this brand.`}
+        <div style="font-size:15px;color:${aiSaysColor};line-height:1.7;font-family:'Barlow',sans-serif;">
+          ${aiSaysResponse}
         </div>
       </div>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:0.75rem;">Based on your current AI visibility score of ${combined}/100. Improving your score changes what AI says about you.</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:${aiSaysLabelColor};margin-top:10px;line-height:1.6;">
+        ${aiSaysLabel}
+      </div>
     </div>
 
     <hr class="reveal d8" />
