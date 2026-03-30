@@ -84,10 +84,19 @@ export default async function handler(req) {
   });
 
   // ── 3. Internal lead notification ─────────────────────────────────────────
+  const subjectMap = {
+    'gate':                `🔍 New audit lead: ${domain} scored ${combined}/100`,
+    'cta':                 `🎯 CTA lead: ${domain} wants help — ${email}`,
+    'shared-report-gate':  `🔗 Shared report lead: ${domain} — ${email}`,
+    'shared-report-cta':   `🎯 Shared CTA: ${domain} wants help — ${email}`,
+    'report-cta-form':     `🤝 Contact request: ${domain} scored ${combined}/100 — ${email}`,
+  };
+  const notifySubject = subjectMap[source] || `📥 New lead: ${domain} — ${email}`;
+
   await sendViaResend({
     from:    `Attomik Leads <${FROM_EMAIL}>`,
     to:      [NOTIFY_EMAIL],
-    subject: `🟢 New lead: ${domain} — ${combined}/100 — ${email}`,
+    subject: notifySubject,
     html: `<div style="font-family:monospace;background:#000;color:#fff;padding:24px;border-radius:8px;max-width:480px;">
       <div style="color:#00ff97;font-weight:700;margin-bottom:16px;font-size:13px;">NEW AI AUDIT LEAD</div>
       ${tableRow('Email',   email)}
