@@ -1625,8 +1625,15 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
       <h2 style="font-family:'Barlow',sans-serif;font-weight:800;font-size:clamp(28px,4vw,42px);color:#fff;letter-spacing:-0.03em;line-height:1.15;margin-bottom:1rem;">Your score doesn't have to stay here.</h2>
       <p style="font-size:16px;color:rgba(255,255,255,0.8);line-height:1.7;max-width:520px;margin:0 auto 0.75rem;">We've taken brands from invisible to recommended — on ChatGPT, Perplexity, Google AI, and Copilot. We handle every single fix, end to end. No guesswork, no agencies to manage, no reports that collect dust.</p>
       <p style="font-size:16px;color:#fff;font-weight:700;margin-bottom:2rem;">Just results.</p>
-      <a href="mailto:pablo@attomik.co?subject=I want to fix my AI visibility — ${data.domain} scored ${combined}/100&body=Hi Pablo,%0D%0A%0D%0AI just ran the AI audit on ${data.domain} and scored ${combined}/100.%0D%0A%0D%0AI want Attomik to fix this for me.%0D%0A%0D%0A[Your name]%0D%0A[Your company]" style="display:inline-block;background:#00ff97;color:#000;font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:-0.02em;">Get Attomik to fix this →</a>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:12px;">We'll respond within 1 business day.</div>
+      <button id="fixCTABtn" onclick="toggleFixForm()" style="display:inline-block;background:#00ff97;color:#000;font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;padding:16px 40px;border-radius:8px;border:none;cursor:pointer;letter-spacing:-0.02em;">Get Attomik to fix this →</button>
+      <div id="fixForm" style="max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.16,1,0.3,1),opacity 0.3s ease;opacity:0;">
+        <div style="max-width:400px;margin:1.5rem auto 0;">
+          <input id="fixName" placeholder="Your name" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 16px;color:#fff;font-family:'Barlow',sans-serif;font-size:15px;outline:none;margin-bottom:10px;" onfocus="this.style.borderColor='#00ff97'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'" />
+          <input id="fixEmail" type="email" placeholder="Your work email" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px 16px;color:#fff;font-family:'Barlow',sans-serif;font-size:15px;outline:none;margin-bottom:10px;" onfocus="this.style.borderColor='#00ff97'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'" />
+          <button id="fixSubmitBtn" onclick="submitFixForm('${data.domain}', ${combined}, ${critCount})" style="width:100%;background:#00ff97;color:#000;font-family:'Barlow',sans-serif;font-weight:800;font-size:15px;padding:13px;border-radius:8px;border:none;cursor:pointer;">Send my details to Attomik →</button>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;">We'll reach out within 1 business day.</div>
+        </div>
+      </div>
     </div>
 
     <!-- FINAL CTA -->
@@ -1640,6 +1647,79 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
 
     <p class="powered">Powered by <a href="https://attomik.co">Attomik</a> · Free AI Search Visibility Scanner</p>
   `;
+}
+
+function toggleFixForm() {
+  const form = document.getElementById('fixForm');
+  const btn = document.getElementById('fixCTABtn');
+  if (!form) return;
+  const isOpen = form.style.maxHeight !== '0px' && form.style.maxHeight !== '';
+  if (isOpen) {
+    form.style.maxHeight = '0';
+    form.style.opacity = '0';
+    btn.textContent = 'Get Attomik to fix this \u2192';
+  } else {
+    form.style.maxHeight = '400px';
+    form.style.opacity = '1';
+    btn.textContent = 'Never mind';
+    setTimeout(() => document.getElementById('fixName')?.focus(), 400);
+  }
+}
+
+async function submitFixForm(domain, combined, critCount) {
+  const name  = document.getElementById('fixName')?.value.trim();
+  const email = document.getElementById('fixEmail')?.value.trim();
+  const btn   = document.getElementById('fixSubmitBtn');
+
+  if (!name) {
+    document.getElementById('fixName').style.borderColor = '#ef4444';
+    return;
+  }
+  if (!email || !email.includes('@')) {
+    document.getElementById('fixEmail').style.borderColor = '#ef4444';
+    return;
+  }
+
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    await fetch('/api/send-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name,
+        domain,
+        url: 'https://' + domain,
+        combined,
+        critCount,
+        aiScore: 0,
+        seoScore: 0,
+        warnCount: 0,
+        issues: [],
+        engines: [],
+        source: 'report-cta-form',
+      }),
+    });
+  } catch(e) {
+    console.warn('submit error:', e.message);
+  }
+
+  // Show success state
+  const form = document.getElementById('fixForm');
+  if (form) {
+    form.innerHTML = `
+      <div style="text-align:center;padding:1rem 0;">
+        <div style="font-size:28px;margin-bottom:0.75rem;">\u2713</div>
+        <div style="font-family:'Barlow',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:6px;">
+          We got it. Talk soon, ${name.split(' ')[0]}.
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);">
+          Check your inbox — we'll follow up within 1 business day.
+        </div>
+      </div>`;
+  }
 }
 
 async function runAudit() {
