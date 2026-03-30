@@ -76,7 +76,7 @@ header { display: none; }
 
 .hero h1 {
   font-family: 'Barlow', sans-serif;
-  font-size: clamp(28px, 4vw, 46px);
+  font-size: clamp(32px, 5vw, 64px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.04em;
@@ -86,6 +86,7 @@ header { display: none; }
   white-space: normal;
   word-break: normal;
   overflow-wrap: normal;
+  hyphens: none;
 }
 .hero h1 em { font-style: normal; color: var(--accent); display: inline; white-space: nowrap; }
 .hero-sub { font-size: 16px; color: rgba(255,255,255,0.75); max-width: 480px; margin: 0 auto 1.25rem; font-weight: 400; }
@@ -359,7 +360,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .hero-tag { margin-bottom: 1rem; }
   .hero { padding-top: 3rem; }
   .hero-logo { margin-top: 1.5rem; }
-  .hero h1 { margin-bottom: 0.75rem; font-size: 30px; letter-spacing: -0.02em; line-height: 1.1; }
+  .hero h1 { margin-bottom: 0.75rem; font-size: 28px; letter-spacing: -0.02em; line-height: 1.1; }
+  .hero h1 em { white-space: normal; }
   .hero-sub { margin-bottom: 1.5rem; }
   .social-proof-names { font-size: 11px; letter-spacing: 0.06em; }
   .audit-form { flex-direction: column; gap: 8px; }
