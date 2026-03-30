@@ -2144,13 +2144,14 @@ async function runAudit() {
       inner.innerHTML =
         '<div style="text-align:center;padding:2rem;max-width:480px;opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s cubic-bezier(0.16,1,0.3,1);" id="finalSlide">' +
           '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">YOUR REPORT IS READY</div>' +
-          '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">SEE EVERY GAP.<br>GET THE FIX PLAN.</div>' +
-          '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send the full report straight to your inbox — plus a free deeper audit from our team.</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">Your full report is ready.</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send your complete AI visibility breakdown instantly — every issue, every engine score, and exactly what to fix.</div>' +
           '<div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto 12px;">' +
             '<input id="gateEmail" type="email" placeholder="Enter your work email" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:13px 16px;color:#fff;font-family:\'Barlow\',sans-serif;font-size:15px;outline:none;text-align:center;" />' +
-            '<button id="vrBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me my results →</button>' +
+            '<button id="vrBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me the full report →</button>' +
           '</div>' +
-          '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.25);margin-top:10px;">' + data.issues.length + ' issues · ' + critCount + ' critical · results sent instantly</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;line-height:1.6;">\uD83D\uDCE9 We\'ll send it instantly — check your inbox.<br>Not there? Check your spam folder or Gmail\'s Promotions / Updates tabs.</div>' +
+          '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,0.25);margin-top:10px;">Free. No pitch. Unsubscribe anytime.</div>' +
         '</div>';
       requestAnimationFrame(() => requestAnimationFrame(() => {
         const s = document.getElementById('finalSlide');
@@ -2210,8 +2211,9 @@ async function runAudit() {
           if (slide) {
             slide.innerHTML =
               '<div style="text-align:center;max-width:440px;">' +
-                '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-0.04em;color:#00ff97;margin-bottom:0.75rem;line-height:1.1;">Your full report is ready.</div>' +
-                '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:2rem;">We just sent your AI visibility breakdown to <span style="font-family:\'DM Mono\',monospace;color:#fff;">' + email + '</span>. Check your inbox — it usually arrives in under a minute.</div>' +
+                '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,40px);font-weight:800;letter-spacing:-0.04em;color:#00ff97;margin-bottom:0.75rem;line-height:1.1;">Your report is on its way. \u2713</div>' +
+                '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;margin-bottom:0.75rem;">We just sent your full AI visibility breakdown to <span style="font-family:\'DM Mono\',monospace;color:#fff;">' + email + '</span>. Usually arrives in under a minute.</div>' +
+                '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;max-width:360px;margin:0 auto;margin-top:12px;margin-bottom:2rem;">Not seeing it? Check your spam folder or Gmail\'s Promotions and Updates tabs — email filters sometimes catch automated reports.</div>' +
                 '<div style="margin-bottom:2rem;"><a href="#" id="changeEmailLink" style="display:inline-block;font-family:\'DM Mono\',monospace;font-size:12px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,0.25);padding:6px 16px;border-radius:6px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor=\'#00ff97\';this.style.color=\'#00ff97\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.25)\';this.style.color=\'#fff\'">&#9998; Wrong email? Change it</a></div>' +
                 '<a href="#" id="runAnotherLink" style="font-family:\'Barlow\',sans-serif;font-size:14px;color:rgba(255,255,255,0.35);text-decoration:none;">\u2190 Run another audit</a>' +
               '</div>';
@@ -2245,12 +2247,14 @@ async function runAudit() {
                 slide.innerHTML =
                   '<div style="text-align:center;max-width:480px;">' +
                     '<div style="font-family:\'DM Mono\',monospace;font-size:13px;letter-spacing:0.1em;color:rgba(255,255,255,0.9);font-weight:700;text-transform:uppercase;margin-bottom:1rem;">YOUR REPORT IS READY</div>' +
-                    '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">SEE EVERY GAP.<br>GET THE FIX PLAN.</div>' +
-                    '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send the full report straight to your inbox — plus a free deeper audit from our team.</div>' +
+                    '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-0.04em;color:#fff;margin-bottom:0.5rem;line-height:1.1;">Your full report is ready.</div>' +
+                    '<div style="font-family:\'Barlow\',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:1.75rem;max-width:360px;margin-left:auto;margin-right:auto;">Enter your email and we\'ll send your complete AI visibility breakdown instantly — every issue, every engine score, and exactly what to fix.</div>' +
                     '<div style="display:flex;flex-direction:column;gap:10px;max-width:360px;margin:0 auto 12px;">' +
                       '<input id="gateEmail" type="email" placeholder="Enter your work email" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:13px 16px;color:#fff;font-family:\'Barlow\',sans-serif;font-size:15px;outline:none;text-align:center;" />' +
-                      '<button id="vrBtn2" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me my results \u2192</button>' +
+                      '<button id="vrBtn2" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:14px 24px;font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:-0.02em;">Send me the full report \u2192</button>' +
                     '</div>' +
+                    '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-top:10px;line-height:1.6;">\uD83D\uDCE9 We\'ll send it instantly — check your inbox.<br>Not there? Check your spam folder or Gmail\'s Promotions / Updates tabs.</div>' +
+                    '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:rgba(255,255,255,0.25);margin-top:10px;">Free. No pitch. Unsubscribe anytime.</div>' +
                   '</div>';
                 slide.style.opacity = '1';
                 document.getElementById('gateEmail')?.focus();
