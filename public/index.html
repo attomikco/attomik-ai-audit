@@ -587,6 +587,7 @@ body.has-results .landing-only { display: none; }
 .vstat-label { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
 .danger-text { color: var(--danger); }
 .warn-text { color: var(--warn); }
+.ok-text { color: var(--ok); }
 
 
 /* BIG SECTION LABELS */
@@ -620,6 +621,10 @@ body.has-results .landing-only { display: none; }
 .engine-big-pct-num { font-family: 'Barlow', sans-serif; font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; margin-bottom: 4px; }
 .engine-big-pct-num.danger { color: var(--danger); }
 .engine-big-pct-num.warn { color: var(--warn); }
+.engine-big-pct-num.ok { color: var(--ok); }
+.ebf-danger { background: var(--danger); }
+.ebf-warn { background: var(--warn); }
+.ebf-ok { background: var(--ok); }
 .engine-big-pct-unit { font-size: 36px; font-weight: 700; vertical-align: top; margin-top: 6px; display: inline-block; }
 
 
@@ -1357,8 +1362,8 @@ function analyze(doc, url, shopify) {
   };
 }
 
-function scoreClass(n) { return n >= 70 ? 'ok' : n >= 45 ? 'warn' : 'danger'; }
-function barClass(n) { return n >= 70 ? 'bf-ok' : n >= 45 ? 'bf-warn' : 'bf-danger'; }
+function scoreClass(n) { return n >= 80 ? 'ok' : n >= 45 ? 'warn' : 'danger'; }
+function barClass(n) { return n >= 80 ? 'bf-ok' : n >= 45 ? 'bf-warn' : 'bf-danger'; }
 function grade(n) { return n >= 80 ? 'Good' : n >= 60 ? 'Needs work' : n >= 40 ? 'Poor' : 'Critical'; }
 
 function aiVerdict(n) {
@@ -1454,6 +1459,9 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
       }).join('')}</div>
     </div>` : '';
 
+  const reportId = 'ATM-' + Math.floor(1000 + Math.random() * 9000) + '-' + data.domain.replace(/[^a-z0-9]/gi,'').slice(-3).toUpperCase();
+  const reportDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
   const SHARED_MODE = window._sharedMode || false;
   const VISIBLE_ISSUES = SHARED_MODE ? 3 : issues.length;
 
@@ -1513,6 +1521,11 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
       </button>
     </div>
 
+    <!-- REPORT META -->
+    <div style="text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:1.5rem;">
+      Report generated ${reportDate} · ID: ${reportId}
+    </div>
+
     <!-- VERDICT HERO -->
     <div class="verdict-hero reveal reveal-score d1">
       <div class="verdict-score-wrap">
@@ -1525,9 +1538,29 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
         <div class="verdict-stats">
           <div class="vstat"><div class="vstat-num danger-text">${critCount}</div><div class="vstat-label">Critical issues</div></div>
           <div class="vstat"><div class="vstat-num warn-text">${warnCount}</div><div class="vstat-label">Warnings</div></div>
-          <div class="vstat"><div class="vstat-num" style="color:var(--accent)">${aiScore}</div><div class="vstat-label">AI readiness</div></div>
-          <div class="vstat"><div class="vstat-num" style="color:#999">${seoScore}</div><div class="vstat-label">SEO foundation</div></div>
+          <div class="vstat"><div class="vstat-num ${aiC}-text">${aiScore}</div><div class="vstat-label">AI readiness</div></div>
+          <div class="vstat"><div class="vstat-num ${seoC}-text">${seoScore}</div><div class="vstat-label">SEO foundation</div></div>
         </div>
+      </div>
+    </div>
+
+    <!-- SHARE SCORE CARD -->
+    <div id="scoreCard" class="reveal d2" style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:1.75rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'Barlow',sans-serif;font-weight:900;font-size:12px;color:#fff;text-transform:uppercase;letter-spacing:0.05em;">ATTOMIK</div>
+        <div style="font-family:'Barlow',sans-serif;font-weight:800;font-size:20px;color:#fff;margin-top:4px;">${displayName}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);margin-top:8px;text-transform:uppercase;letter-spacing:0.08em;">AI Visibility Score</div>
+        <div style="font-family:'Barlow',sans-serif;font-weight:800;font-size:56px;letter-spacing:-0.05em;line-height:1;margin-top:4px;color:var(--${sc === 'ok' ? 'ok' : sc === 'warn' ? 'warn' : 'danger'});">${combined}<span style="font-size:20px;color:rgba(255,255,255,0.3);font-weight:600;">/100</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
+        <div><div style="font-family:'Barlow',sans-serif;font-weight:700;font-size:18px;color:var(--danger);">${critCount}</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Critical</div></div>
+        <div><div style="font-family:'Barlow',sans-serif;font-weight:700;font-size:18px;color:var(--warn);">${warnCount}</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Warnings</div></div>
+        <div><div style="font-family:'Barlow',sans-serif;font-weight:700;font-size:18px;" class="${aiC}-text">${aiScore}</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">AI Ready</div></div>
+        <div><div style="font-family:'Barlow',sans-serif;font-weight:700;font-size:18px;" class="${seoC}-text">${seoScore}</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">SEO Base</div></div>
+      </div>
+      <div style="width:100%;border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem;margin-top:0.75rem;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);">audit.attomik.co</span>
+        <button onclick="shareReport()" style="background:transparent;border:1px solid rgba(255,255,255,0.2);font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);padding:5px 14px;border-radius:5px;cursor:pointer;">Screenshot &amp; share →</button>
       </div>
     </div>
 
@@ -1550,11 +1583,14 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
 
     ${(() => {
       const avg = (aiScore + seoScore) / 2;
+      const engineColor = (v) => v >= 80 ? 'ok' : v >= 45 ? 'warn' : 'danger';
+      const engineBarCls = (v) => v >= 80 ? 'ebf-ok' : v >= 45 ? 'ebf-warn' : 'ebf-danger';
+      const engineStatusCls = (v) => v >= 80 ? 'es-ok' : v >= 45 ? 'es-warn' : 'es-danger';
       return [
-        { name: 'ChatGPT', desc: 'The most widely used AI for product discovery and recommendations. When shoppers ask "what\'s the best X", ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear in results' : 'Not being recommended', cls: avg >= 65 ? 'es-warn' : 'es-danger', pct: Math.round(avg * 0.9) },
-        { name: 'Perplexity', desc: 'The AI search engine growing fastest among research-driven buyers. Product pages with structured data and rich content rank here — thin pages don\'t.', label: aiScore >= 60 ? 'Indexable with gaps' : 'Invisible to search', cls: aiScore >= 60 ? 'es-warn' : 'es-danger', pct: Math.round(aiScore * 0.85) },
-        { name: 'Google AI Overviews', desc: 'Google\'s AI-generated summaries now appear above organic results. Brands without schema markup, E-E-A-T signals, and FAQ content are excluded entirely.', label: (seoScore >= 65 && aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', cls: (seoScore >= 65 && aiScore >= 55) ? 'es-warn' : 'es-danger', pct: Math.round((seoScore * 0.6 + aiScore * 0.4) * 0.9) },
-        { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge, and Bing — reaching hundreds of millions of users. Copilot pulls from structured web data and Open Graph metadata to build brand summaries.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', cls: avg >= 70 ? 'es-warn' : 'es-danger', pct: Math.round(avg * 0.8) },
+        { name: 'ChatGPT', desc: 'The most widely used AI for product discovery and recommendations. When shoppers ask "what\'s the best X", ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear in results' : 'Not being recommended', pct: Math.round(avg * 0.9) },
+        { name: 'Perplexity', desc: 'The AI search engine growing fastest among research-driven buyers. Product pages with structured data and rich content rank here — thin pages don\'t.', label: aiScore >= 60 ? 'Indexable with gaps' : 'Invisible to search', pct: Math.round(aiScore * 0.85) },
+        { name: 'Google AI Overviews', desc: 'Google\'s AI-generated summaries now appear above organic results. Brands without schema markup, E-E-A-T signals, and FAQ content are excluded entirely.', label: (seoScore >= 65 && aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', pct: Math.round((seoScore * 0.6 + aiScore * 0.4) * 0.9) },
+        { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge, and Bing — reaching hundreds of millions of users. Copilot pulls from structured web data and Open Graph metadata to build brand summaries.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', pct: Math.round(avg * 0.8) },
       ].map((e, i) => `
         <div class="engine-big-row reveal d${4+i}">
           <div class="engine-big-left">
@@ -1562,12 +1598,34 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
             <div class="engine-big-desc">${e.desc}</div>
           </div>
           <div class="engine-big-right">
-            <div class="engine-big-pct-num ${e.cls === 'es-danger' ? 'danger' : 'warn'}">${e.pct}<span class="engine-big-pct-unit">%</span></div>
-            <div class="engine-big-status ${e.cls}">${e.label}</div>
-            <div class="engine-big-bar-track"><div class="engine-big-bar-fill ${e.cls === 'es-danger' ? 'ebf-danger' : 'ebf-warn'}" style="width:0%" data-w="${e.pct}%"></div></div>
+            <div class="engine-big-pct-num ${engineColor(e.pct)}">${e.pct}<span class="engine-big-pct-unit">%</span></div>
+            <div class="engine-big-status ${engineStatusCls(e.pct)}">${e.label}</div>
+            <div class="engine-big-bar-track"><div class="engine-big-bar-fill ${engineBarCls(e.pct)}" style="width:0%" data-w="${e.pct}%"></div></div>
           </div>
         </div>`).join('');
     })()}
+
+    <!-- WHAT AI SAYS -->
+    <div class="reveal d8" style="margin-top:2.5rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.25rem;">WHAT AI SAYS ABOUT YOUR BRAND</div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">Simulated response when someone asks ChatGPT about your brand</div>
+      <div style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.5rem;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--ok);"></div>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.6);">ChatGPT</span>
+        </div>
+        <div style="font-size:15px;line-height:1.7;color:${combined >= 80 ? 'rgba(255,255,255,0.85)' : combined >= 60 ? 'rgba(255,255,255,0.7)' : combined >= 40 ? 'var(--warn)' : 'var(--danger)'};">
+          ${combined >= 80
+            ? `${displayName} is a well-known brand in their space. They offer products and services and are recognized for their quality and online presence. You can find them at ${data.domain}.`
+            : combined >= 60
+            ? `I've seen some references to ${data.domain} online, though I don't have detailed information about their specific products or brand positioning. You may want to visit their website directly for more information.`
+            : combined >= 40
+            ? `I don't have reliable information about ${data.domain} in my training data. I'd recommend searching directly or checking recent reviews.`
+            : `I'm not familiar with ${data.domain}. I don't have enough information to make a recommendation about this brand.`}
+        </div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:0.75rem;">Based on your current AI visibility score of ${combined}/100. Improving your score changes what AI says about you.</div>
+    </div>
 
     <hr class="reveal d8" />
 
