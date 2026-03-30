@@ -274,7 +274,7 @@ header { display: none; }
 .score-grade { font-size: 13px; color: var(--muted); }
 
 /* ENGINE STATUS */
-.engines-row { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 2rem; }
+.engines-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 2rem; }
 .engine-card {
   flex: 1; min-width: 0;
   background: var(--surface); border: 1px solid var(--border);
@@ -341,6 +341,9 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 /* TWO COL */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .engines-row { grid-template-columns: repeat(3, 1fr); }
+}
 @media (max-width: 640px) {
   .two-col, .scores-grid { grid-template-columns: 1fr; }
   .verdict-hero { flex-direction: column; gap: 1.5rem; }
@@ -369,8 +372,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .audit-btn { width: 100%; text-align: center; height: 52px; font-size: 16px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .image-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-  .engines-row { flex-wrap: wrap; }
-  .engines-row .engine-card { flex: 1 1 calc(50% - 4px); min-width: calc(50% - 4px); }
+  .engines-row { grid-template-columns: repeat(2, 1fr); }
   .verdict-stats { gap: 1rem; }
   .cta-section { padding: 2rem 1.25rem; }
   .scan-inner { padding: 1rem; }
@@ -1746,12 +1748,16 @@ async function submitFixForm(domain, combined, critCount) {
   const email = document.getElementById('fixEmail')?.value.trim();
   const btn   = document.getElementById('fixSubmitBtn');
 
-  if (!name) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!name || name.length < 2) {
     document.getElementById('fixName').style.borderColor = '#ef4444';
+    document.getElementById('fixName').placeholder = 'Please enter your name';
     return;
   }
-  if (!email || !email.includes('@')) {
+  if (!email || !emailRegex.test(email)) {
     document.getElementById('fixEmail').style.borderColor = '#ef4444';
+    document.getElementById('fixEmail').placeholder = 'Please enter a valid email';
+    document.getElementById('fixEmail').value = '';
     return;
   }
 
@@ -2206,9 +2212,11 @@ async function runAudit() {
       }));
       async function handleGateSubmit() {
         const email = document.getElementById('gateEmail')?.value.trim();
-        if (!email || !email.includes('@')) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!email || !emailRegex.test(email)) {
           document.getElementById('gateEmail').style.borderColor = '#ef4444';
           document.getElementById('gateEmail').placeholder = 'Please enter a valid email';
+          document.getElementById('gateEmail').value = '';
           return;
         }
         window._gatedEmail = email;
@@ -2429,7 +2437,8 @@ async function runAudit() {
       }
       const name = document.getElementById('ctaName')?.value.trim();
       const email = document.getElementById('ctaEmail')?.value.trim();
-      if (!name || !email) { alert('Please fill in your name and email.'); return; }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      if (!name || !email || !emailRegex.test(email)) { alert('Please fill in your name and a valid email.'); return; }
       sendReport({ email, name, source: 'cta' });
       ctaBtn2.textContent = '✓ Sent — we\'ll reach out within 1 business day';
       ctaBtn2.style.background = '#00ff97';
@@ -2499,8 +2508,9 @@ async function shareReport() {
 async function submitSharedGate() {
   const input = document.getElementById('sharedGateEmail');
   const email = input?.value.trim();
-  if (!email || !email.includes('@')) {
-    if (input) { input.style.borderColor = '#ef4444'; input.placeholder = 'Enter a valid email'; }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!email || !emailRegex.test(email)) {
+    if (input) { input.style.borderColor = '#ef4444'; input.placeholder = 'Enter a valid email'; input.value = ''; }
     return;
   }
   const btn = input.nextElementSibling;
