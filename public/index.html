@@ -831,7 +831,7 @@ body.has-results .landing-only { display: none; }
   </div>
   <div class="hero-tag"><span class="tag-dot"></span>AI Search Visibility Audit</div>
   <h1>Can ChatGPT, Perplexity &amp; Google AI <em>Find Your Business?</em></h1>
-  <p class="hero-sub">ChatGPT, Perplexity, Copilot &amp; Google AI are the new search. Most brands are invisible — find out where you stand in 30 seconds.</p>
+  <p class="hero-sub">ChatGPT, Perplexity, Claude, Copilot &amp; Google AI are the new search. Most brands are invisible — find out where you stand in 30 seconds.</p>
   <div class="audit-form">
     <input type="text" id="urlInput" placeholder="yourwebsite.com" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="url" />
     <button class="audit-btn" id="auditBtn">Check my AI visibility →</button>
@@ -1594,6 +1594,7 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
         { name: 'Perplexity', desc: 'The AI search engine growing fastest among research-driven buyers. Product pages with structured data and rich content rank here — thin pages don\'t.', label: aiScore >= 60 ? 'Indexable with gaps' : 'Invisible to search', pct: Math.round(aiScore * 0.85) },
         { name: 'Google AI Overviews', desc: 'Google\'s AI-generated summaries now appear above organic results. Brands without schema markup, E-E-A-T signals, and FAQ content are excluded entirely.', label: (seoScore >= 65 && aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', pct: Math.round((seoScore * 0.6 + aiScore * 0.4) * 0.9) },
         { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge, and Bing — reaching hundreds of millions of users. Copilot pulls from structured web data and Open Graph metadata to build brand summaries.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', pct: Math.round(avg * 0.8) },
+        { name: 'Claude', desc: 'Anthropic\'s Claude is increasingly used for product research and recommendations. Claude pulls from structured web content and brand signals — brands with clear schema and rich content get cited, others get ignored.', label: avg >= 65 ? 'May appear in results' : 'Not being cited', pct: Math.round(avg * 0.85) },
       ].map((e, i) => `
         <div class="engine-big-row reveal d${4+i}">
           <div class="engine-big-left">
@@ -2108,6 +2109,7 @@ async function runAudit() {
       { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', color: data.aiScore >= 60 ? '#f59e0b' : '#ef4444', pct: Math.round(data.aiScore * 0.85) },
       { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', color: (data.seoScore >= 65 && data.aiScore >= 55) ? '#f59e0b' : '#ef4444', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9) },
       { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', color: avg >= 70 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.8) },
+      { name: 'Claude', desc: 'Increasingly used for product research and purchase decisions. Claude cites brands with clear structure and rich content — invisible brands get skipped entirely.', label: avg >= 65 ? 'May appear' : 'Not being cited', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.85) },
     ];
 
     for (const e of engines) {
@@ -2195,6 +2197,7 @@ async function runAudit() {
           { name: 'Perplexity', pct: Math.round(data.aiScore * 0.85),                               label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
           { name: 'Google AI',  pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9), label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
           { name: 'Copilot',    pct: Math.round(avg * 0.8),                                         label: avg >= 70 ? 'Limited' : 'Not optimized' },
+          { name: 'Claude',     pct: Math.round(avg * 0.85),                                        label: avg >= 65 ? 'May appear' : 'Not cited' },
         ];
 
         // Show sending animation immediately
@@ -2318,6 +2321,7 @@ async function runAudit() {
           { name: 'Perplexity',       pct: Math.round(data.aiScore * 0.85),                               label: data.aiScore >= 60 ? 'Indexable' : 'Invisible' },
           { name: 'Google AI',        pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9), label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial' : 'Excluded' },
           { name: 'Copilot',          pct: Math.round(avg * 0.8),                                         label: avg >= 70 ? 'Limited' : 'Not optimized' },
+          { name: 'Claude',           pct: Math.round(avg * 0.85),                                        label: avg >= 65 ? 'May appear' : 'Not cited' },
         ];
       })(),
     };
