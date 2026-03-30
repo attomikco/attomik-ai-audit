@@ -1117,15 +1117,18 @@ function hideOverlayWithError(msg) {
 }
 
 async function fetchPage(url) {
-  for (const proxy of PROXIES) {
-    try {
-      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      const text = await r.text();
-      if (text && text.length > 200) return text;
-    } catch {}
-  }
-  return null;
+  const results = await Promise.allSettled(
+    PROXIES.map(proxy =>
+      fetch(proxy(url), { signal: AbortSignal.timeout(8000) })
+        .then(r => r.ok ? r.text() : null)
+        .catch(() => null)
+    )
+  );
+  const texts = results
+    .filter(r => r.status === 'fulfilled' && r.value && r.value.length > 200)
+    .map(r => r.value);
+  if (texts.length === 0) return null;
+  return texts.reduce((a, b) => a.length > b.length ? a : b);
 }
 
 async function fetchJSON(url) {
@@ -1849,6 +1852,43 @@ async function runAudit() {
   input.style.borderColor = '';
 
   const btn = document.getElementById('auditBtn');
+
+  // Check cache first
+  const cacheKey = 'audit_' + raw;
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      const cachedData = JSON.parse(cached);
+      document.body.classList.add('has-results');
+      const wrap = document.getElementById('results');
+      wrap.innerHTML = buildResults(
+        cachedData.data,
+        cachedData.colors,
+        cachedData.imgUrls,
+        cachedData.shopify,
+        cachedData.raw,
+        cachedData.isShopify,
+        cachedData.brandName
+      );
+      wrap.classList.add('visible');
+      window._auditResult = cachedData.auditResult;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+        setTimeout(() => {
+          document.querySelectorAll('[data-w]').forEach(bar => {
+            bar.style.width = bar.dataset.w;
+          });
+        }, 400);
+      });
+      btn.disabled = false;
+      btn.textContent = 'Check my AI visibility \u2192';
+      return;
+    } catch(e) {
+      sessionStorage.removeItem(cacheKey);
+    }
+  }
+
   btn.disabled = true;
   btn.textContent = 'Scanning...';
   const resultsEl = document.getElementById('results');
@@ -2360,6 +2400,13 @@ async function runAudit() {
       })(),
     };
     window._shareUrl = null; // reset share URL for new report
+    // Save to cache
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        data, colors, imgUrls, shopify, raw, isShopify, brandName,
+        auditResult: window._auditResult
+      }));
+    } catch(e) {}
     wrap.innerHTML = buildResults(data, colors, imgUrls, shopify, raw, isShopify, brandName);
     wrap.classList.add('visible');
     document.title = brandName + ' AI Visibility Report \u2014 Attomik';
@@ -2374,6 +2421,8 @@ async function runAudit() {
       '</button>';
     wrap.appendChild(tryAnother);
     document.getElementById('tryAnotherBtn').addEventListener('click', () => {
+      // Clear cache
+      sessionStorage.removeItem('audit_' + (document.getElementById('urlInput')?.value?.trim() || ''));
       // Clear results
       wrap.innerHTML = '';
       wrap.classList.remove('visible');
