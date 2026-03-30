@@ -1416,11 +1416,15 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
     : '<p class="no-data">No images found</p>';
 
   const ogCard = `<div class="og-card">
-    <div class="og-card-img">
-      ${ogImage
-        ? `<img src="${ogImage}" onerror="this.parentElement.innerHTML='<div class=og-missing-label>OG image failed to load</div>'" />`
-        : '<div class="og-missing-label">No og:image — AI previews will be blank</div>'}
-    </div>
+    ${ogImage
+      ? `<div class="og-card-img"><img src="${ogImage}" onerror="this.parentElement.innerHTML='<div class=og-missing-label>OG image failed to load</div>'" /></div>`
+      : `<div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.4);border-radius:10px;padding:1.25rem 1.5rem;display:flex;align-items:flex-start;gap:12px;margin-bottom:0.5rem;">
+        <div style="font-size:20px;flex-shrink:0;">\uD83D\uDEA8</div>
+        <div>
+          <div style="font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;color:#ef4444;letter-spacing:-0.01em;margin-bottom:4px;">NO SOCIAL PREVIEW IMAGE FOUND</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;">When your brand is shared on ChatGPT, Slack, iMessage, or social media — nothing shows up. No image, no preview, no brand impression. Add an og:image tag immediately.</div>
+        </div>
+      </div>`}
     <div class="og-card-body">
       <div class="og-card-domain">${domain}</div>
       <div class="og-card-title">${ogTitle || '<em style="color:#555">No og:title set</em>'}</div>
