@@ -1842,7 +1842,12 @@ async function runAudit() {
   try {
     const scanStart = Date.now();
 
-    const html = await fetchPage(raw);
+    let html = await fetchPage(raw);
+    if (!html) {
+      // Auto-retry once after 2s delay
+      await new Promise(r => setTimeout(r, 2000));
+      html = await fetchPage(raw);
+    }
     if (!html) {
       const overlay = document.getElementById('scanOverlay');
       const inner = overlay.querySelector('.scan-inner');
@@ -1850,11 +1855,21 @@ async function runAudit() {
       inner.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
       inner.innerHTML =
         '<div style="text-align:center;padding:2rem;max-width:480px;">' +
-          '<div style="font-size:40px;margin-bottom:1.5rem;">🔒</div>' +
-          '<div style="font-family:\'Barlow\',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.75rem;">This site blocked the scan</div>' +
-          '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:2rem;"><strong style="color:rgba(255,255,255,0.7)">' + getDomain(raw) + '</strong> is blocking external requests.<br>Try a Shopify store like glossier.com,<br>gymshark.com or drinkhpo.com</div>' +
-          '<button id="tryAgainBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:12px 28px;font-family:\'Barlow\',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.01em;">← Try another URL</button>' +
+          '<div style="font-size:40px;margin-bottom:1.5rem;">\u26A0\uFE0F</div>' +
+          '<div style="font-family:\'Barlow\',sans-serif;font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.75rem;">Couldn\'t reach this site right now</div>' +
+          '<div style="font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:2rem;">This sometimes happens when our scanner is temporarily rate-limited. Wait a few seconds and try again — it usually works on the second attempt.</div>' +
+          '<div style="display:flex;flex-direction:column;gap:10px;align-items:center;">' +
+            '<button id="retryBtn" style="background:#00ff97;color:#000;border:none;border-radius:6px;padding:12px 28px;font-family:\'Barlow\',sans-serif;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:-0.01em;">Try again \u2192</button>' +
+            '<button id="tryAgainBtn" style="background:transparent;color:rgba(255,255,255,0.5);border:none;font-family:\'DM Mono\',monospace;font-size:13px;cursor:pointer;padding:8px 16px;">\u2190 Try another URL</button>' +
+          '</div>' +
         '</div>';
+      document.getElementById('retryBtn').addEventListener('click', () => {
+        overlay.classList.remove('visible');
+        overlay.style.cssText = '';
+        btn.disabled = false;
+        btn.textContent = 'Check my AI visibility \u2192';
+        runAudit();
+      });
       document.getElementById('tryAgainBtn').addEventListener('click', () => {
         overlay.classList.remove('visible');
         overlay.style.cssText = '';
@@ -1862,7 +1877,7 @@ async function runAudit() {
         document.getElementById('urlInput').focus();
       });
       btn.disabled = false;
-      btn.textContent = 'Check my AI visibility →';
+      btn.textContent = 'Check my AI visibility \u2192';
       return;
     }
 
