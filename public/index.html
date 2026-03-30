@@ -194,10 +194,10 @@ header { display: none; }
 .scan-step {
   display: flex; align-items: center; gap: 12px;
   transition: opacity 0.3s;
-  opacity: 0.25;
+  opacity: 0.6;
 }
 .scan-step.active { opacity: 1; }
-.scan-step.done { opacity: 0.7; }
+.scan-step.done { opacity: 1; }
 .scan-step-icon {
   width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -209,24 +209,24 @@ header { display: none; }
 .scan-step-text { flex: 1; }
 .scan-step-label {
   font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.3); letter-spacing: -0.01em;
+  color: rgba(255,255,255,0.45); letter-spacing: -0.01em;
   transition: color 0.3s;
 }
-.scan-step.active .scan-step-label { color: #fff; }
+.scan-step.active .scan-step-label { color: #ffffff; }
 .scan-step.done .scan-step-label { color: var(--accent); }
 .scan-step-sub {
   font-family: 'DM Mono', monospace; font-size: 10px;
-  color: rgba(255,255,255,0.2); margin-top: 1px;
+  color: rgba(255,255,255,0.3); margin-top: 1px;
   transition: color 0.3s;
 }
-.scan-step.active .scan-step-sub { color: rgba(255,255,255,0.5); }
-.scan-step.done .scan-step-sub { color: rgba(0,255,151,0.5); }
+.scan-step.active .scan-step-sub { color: rgba(255,255,255,0.6); }
+.scan-step.done .scan-step-sub { color: rgba(0,255,151,0.6); }
 @keyframes dash-in { to { stroke-dashoffset: 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .scan-status {
   font-family: 'DM Mono', monospace; font-size: 10px;
-  color: rgba(255,255,255,0.25); letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4); letter-spacing: 0.08em;
   text-transform: uppercase; min-height: 14px;
 }
 
@@ -2025,7 +2025,7 @@ async function runAudit() {
 
     // ── CINEMATIC SLIDES ──
     const combined = Math.round((data.aiScore * 0.65) + (data.seoScore * 0.35));
-    const scoreColor = combined >= 70 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
+    const scoreColor = combined >= 80 ? '#00cc78' : combined >= 45 ? '#f59e0b' : '#ef4444';
     const critCount = data.issues.filter(i => i.sev === 'danger').length;
 
     function showSlide(html, duration) {
@@ -2133,12 +2133,12 @@ async function runAudit() {
     // SLIDES — AI Engines one by one
     const avg = (data.aiScore + data.seoScore) / 2;
     const engines = [
-      { name: 'ChatGPT', desc: 'When shoppers ask "what\'s the best X" — ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear' : 'Not being recommended', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.9) },
-      { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', color: data.aiScore >= 60 ? '#f59e0b' : '#ef4444', pct: Math.round(data.aiScore * 0.85) },
-      { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', color: (data.seoScore >= 65 && data.aiScore >= 55) ? '#f59e0b' : '#ef4444', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9) },
-      { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', color: avg >= 70 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.8) },
-      { name: 'Claude', desc: 'Increasingly used for product research and purchase decisions. Claude cites brands with clear structure and rich content — invisible brands get skipped entirely.', label: avg >= 65 ? 'May appear' : 'Not being cited', color: avg >= 65 ? '#f59e0b' : '#ef4444', pct: Math.round(avg * 0.85) },
-    ];
+      { name: 'ChatGPT', desc: 'When shoppers ask "what\'s the best X" — ChatGPT\'s answer drives real purchase decisions.', label: avg >= 65 ? 'May appear' : 'Not being recommended', pct: Math.round(avg * 0.9) },
+      { name: 'Perplexity', desc: 'The fastest-growing AI search for research-driven buyers. Thin pages don\'t rank here.', label: data.aiScore >= 60 ? 'Indexable' : 'Invisible to search', pct: Math.round(data.aiScore * 0.85) },
+      { name: 'Google AI Overviews', desc: 'Brands without schema, E-E-A-T signals, and FAQ content are excluded entirely.', label: (data.seoScore >= 65 && data.aiScore >= 55) ? 'Partial inclusion' : 'Excluded from overviews', pct: Math.round((data.seoScore * 0.6 + data.aiScore * 0.4) * 0.9) },
+      { name: 'Microsoft Copilot', desc: 'Integrated into Windows, Edge and Bing — reaching hundreds of millions of users.', label: avg >= 70 ? 'Limited visibility' : 'Not optimized', pct: Math.round(avg * 0.8) },
+      { name: 'Claude', desc: 'Increasingly used for product research and purchase decisions. Claude cites brands with clear structure and rich content — invisible brands get skipped entirely.', label: avg >= 65 ? 'May appear' : 'Not being cited', pct: Math.round(avg * 0.85) },
+    ].map(e => ({ ...e, color: e.pct >= 80 ? '#00cc78' : e.pct >= 45 ? '#f59e0b' : '#ef4444' }));
 
     for (const e of engines) {
       await showSlide(
@@ -2164,7 +2164,7 @@ async function runAudit() {
         '<div style="font-family:\'Barlow\',sans-serif;font-size:clamp(100px,20vw,160px);font-weight:800;letter-spacing:-0.05em;line-height:1;color:' + scoreColor + ';animation:score-in 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;">' + combined + '</div>' +
         '<div style="font-family:\'Barlow\',sans-serif;font-size:18px;font-weight:400;color:rgba(255,255,255,0.4);margin-top:0.5rem;">out of 100</div>' +
         '<div style="font-family:\'Barlow\',sans-serif;font-size:16px;font-weight:600;color:rgba(255,255,255,0.7);margin-top:1.5rem;max-width:400px;margin-left:auto;margin-right:auto;">' +
-          (combined >= 70 ? 'Decent foundation — but gaps are costing you.' : combined >= 45 ? 'Largely invisible to AI search engines.' : 'AI cannot confidently recommend your brand.') +
+          (combined >= 80 ? 'Decent foundation — but gaps are costing you.' : combined >= 45 ? 'Largely invisible to AI search engines.' : 'AI cannot confidently recommend your brand.') +
         '</div>' +
       '</div>' +
       '<style>@keyframes score-in{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}</style>',
