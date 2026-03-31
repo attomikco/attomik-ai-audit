@@ -1176,6 +1176,7 @@ const SCAN_STEPS = [
   { label: 'Detecting platform', sub: 'Shopify, custom CMS, frameworks' },
   { label: 'Extracting brand identity', sub: 'Colors, images, OG assets' },
   { label: 'Running AI visibility scan', sub: 'Schema, content signals, E-E-A-T' },
+  { label: 'Building your report', sub: 'Compiling results...' },
 ];
 
 let stepTimer = null;
@@ -1209,7 +1210,7 @@ function showOverlay(url) {
     stepTimer = setInterval(() => {
       completeStep(currentVisualStep);
       currentVisualStep++;
-      if (currentVisualStep < SCAN_STEPS.length) {
+      if (currentVisualStep < SCAN_STEPS.length - 1) {
         activateStep(currentVisualStep);
       } else {
         clearInterval(stepTimer);
@@ -2202,27 +2203,11 @@ async function runAudit() {
     const minScan = 5000;
     if (elapsed < minScan) await new Promise(r => setTimeout(r, minScan - elapsed));
 
-    // Mark all steps done
-    for (let i = 0; i < SCAN_STEPS.length; i++) completeStep(i);
+    // Mark first 5 steps done, then activate the "Building your report" step
+    for (let i = 0; i < SCAN_STEPS.length - 1; i++) completeStep(i);
+    activateStep(SCAN_STEPS.length - 1);
 
-    // Add a 6th "Building report" row that shows as loading (not green)
-    const stepsEl = document.getElementById('scanSteps');
-    if (stepsEl) {
-      const buildRow = document.createElement('div');
-      buildRow.className = 'scan-step active';
-      buildRow.id = 'step-building';
-      buildRow.innerHTML =
-        '<div class="scan-step-icon" style="border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.4);">' +
-          '<svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"><animateTransform attributeName="transform" type="rotate" from="0 5 5" to="360 5 5" dur="0.8s" repeatCount="indefinite"/></circle></svg>' +
-        '</div>' +
-        '<div class="scan-step-text">' +
-          '<div class="scan-step-label" style="color:rgba(255,255,255,0.85);">Building your report</div>' +
-          '<div class="scan-step-sub">Compiling results...</div>' +
-        '</div>';
-      stepsEl.appendChild(buildRow);
-    }
-
-    // Update status text — white, not green
+    // Update status text
     const scanStatusEl = document.getElementById('scanStatus');
     if (scanStatusEl) {
       scanStatusEl.style.cssText = 'font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase;';
