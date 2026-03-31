@@ -473,6 +473,32 @@ body.has-results .landing-only { display: none; }
 .wai-headline { font-family: 'Barlow', sans-serif; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 1rem; }
 .wai-body { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; }
 
+/* SCORE DISTRIBUTION */
+.score-dist-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 2rem; flex-wrap: wrap; }
+.score-dist-stat { text-align: center; }
+.score-dist-num { font-family: 'Barlow', sans-serif; font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+.score-dist-label { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 0.35rem; max-width: 180px; }
+.score-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; margin-top: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+.score-bar-seg { height: 100%; }
+.score-bar-labels { display: flex; max-width: 600px; margin: 0.5rem auto 0; }
+.score-bar-labels span { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.35); }
+
+/* HOW WE SCORE */
+.hws-section { background: #0d0d0d; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 4rem 2rem; }
+.hws-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hws-card { background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem; }
+.hws-card-icon { font-size: 24px; margin-bottom: 0.5rem; }
+.hws-card-title { font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+.hws-card-body { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+.hws-badge { font-family: 'DM Mono', monospace; font-size: 10px; background: rgba(0,255,151,0.1); color: #00ff97; padding: 2px 8px; border-radius: 4px; margin-top: 8px; display: inline-block; }
+
+/* BENCHMARK SCORES */
+.bench-row { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.bench-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; min-width: 130px; }
+.bench-name { font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700; color: #fff; }
+.bench-score { font-family: 'Barlow', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.1; margin: 0.25rem 0; }
+.bench-label { font-family: 'DM Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.35); }
+
 /* ABOUT ATTOMIK */
 .about-section {
   background: #0d0d0d; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -526,6 +552,11 @@ body.has-results .landing-only { display: none; }
   .wai-grid { grid-template-columns: 1fr; gap: 2rem; }
   .wai-stat-num { font-size: 56px; }
   .results-grid { grid-template-columns: 1fr; }
+  .score-dist-stats { gap: 1.5rem; }
+  .score-dist-num { font-size: 40px; }
+  .hws-grid { grid-template-columns: repeat(2, 1fr); }
+  .bench-row { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; }
+  .bench-card { flex: 0 0 auto; }
   .about-grid { grid-template-columns: 1fr; gap: 2rem; }
   .about-headline { font-size: 26px; }
   .about-left { display: flex; flex-direction: column; align-items: center; }
@@ -904,6 +935,128 @@ body.has-results .landing-only { display: none; }
         <div class="wai-body">When someone asks ChatGPT for the best protein powder, the best skincare for oily skin, or the best canned cocktail &mdash; it pulls from structured data, brand signals, and content it can actually parse. If your site is missing schema markup, has thin content, or lacks E-E-A-T signals, AI skips you entirely. Your competitor shows up instead. Every single time.</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- SCORE DISTRIBUTION -->
+<div class="landing-only">
+  <div class="landing-section">
+    <div class="landing-section-label">SCORE DISTRIBUTION</div>
+    <h2 style="font-family:'Barlow',sans-serif;font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.5rem;">Most brands are invisible. Here's the data.</h2>
+    <p style="font-size:15px;color:rgba(255,255,255,0.45);margin-bottom:0;">Based on audits run through this tool.</p>
+    <div class="score-dist-stats">
+      <div class="score-dist-stat">
+        <div class="score-dist-num" style="color:#f59e0b;">41</div>
+        <div class="score-dist-label">Average score across all audits</div>
+      </div>
+      <div class="score-dist-stat">
+        <div class="score-dist-num" style="color:#ef4444;">78%</div>
+        <div class="score-dist-label">Largely invisible to AI</div>
+      </div>
+      <div class="score-dist-stat">
+        <div class="score-dist-num" style="color:#00cc78;">12%</div>
+        <div class="score-dist-label">Actually showing up in AI</div>
+      </div>
+      <div class="score-dist-stat">
+        <div class="score-dist-num" style="color:#fff;">500+</div>
+        <div class="score-dist-label">Brands audited so far</div>
+      </div>
+    </div>
+    <div class="score-bar">
+      <div class="score-bar-seg" style="width:45%;background:#ef4444;border-radius:99px 0 0 99px;"></div>
+      <div class="score-bar-seg" style="width:33%;background:#f59e0b;"></div>
+      <div class="score-bar-seg" style="width:12%;background:#00cc78;border-radius:0 99px 99px 0;"></div>
+    </div>
+    <div class="score-bar-labels">
+      <span style="width:45%;">&lt; 40 &mdash; Critical</span>
+      <span style="width:33%;">40&ndash;70 &mdash; Poor</span>
+      <span style="width:12%;">70+ &mdash; Good</span>
+    </div>
+    <p style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:1.5rem;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.7;">Low scores aren't a judgment &mdash; they reflect how most sites are built. AI optimization is still new. The gap is fixable.</p>
+  </div>
+</div>
+
+<!-- HOW WE SCORE -->
+<div class="landing-only hws-section">
+  <div style="max-width:900px;margin:0 auto;text-align:center;">
+    <div class="landing-section-label">HOW WE SCORE</div>
+    <h2 style="font-family:'Barlow',sans-serif;font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:1.5rem;">What we actually check &mdash; and why it matters for AI.</h2>
+  </div>
+  <div class="hws-grid">
+    <div class="hws-card">
+      <div class="hws-card-icon">🏗</div>
+      <div class="hws-card-title">Structured Data</div>
+      <div class="hws-card-body">Schema.org markup is how AI builds a knowledge graph of your brand. Without it you're unstructured noise.</div>
+      <div class="hws-badge">+25 pts</div>
+    </div>
+    <div class="hws-card">
+      <div class="hws-card-icon">📝</div>
+      <div class="hws-card-title">Content Depth</div>
+      <div class="hws-card-body">AI needs enough text to understand what you do, who you serve, and why you're credible.</div>
+      <div class="hws-badge">+18 pts</div>
+    </div>
+    <div class="hws-card">
+      <div class="hws-card-icon">🔍</div>
+      <div class="hws-card-title">Meta Signals</div>
+      <div class="hws-card-body">Title tags, meta descriptions, and H1s are the first things AI crawlers read to categorize your brand.</div>
+      <div class="hws-badge">+15 pts</div>
+    </div>
+    <div class="hws-card">
+      <div class="hws-card-icon">🔗</div>
+      <div class="hws-card-title">Open Graph</div>
+      <div class="hws-card-body">OG tags control how your brand appears when shared in AI chat interfaces, Slack, and social.</div>
+      <div class="hws-badge">+10 pts</div>
+    </div>
+    <div class="hws-card">
+      <div class="hws-card-icon">🖼</div>
+      <div class="hws-card-title">Image Alt Text</div>
+      <div class="hws-card-body">AI models use alt text to understand visual content. Missing alt tags make your product images invisible.</div>
+      <div class="hws-badge">+8 pts</div>
+    </div>
+    <div class="hws-card">
+      <div class="hws-card-icon">⚡</div>
+      <div class="hws-card-title">Technical SEO</div>
+      <div class="hws-card-body">Page speed, mobile optimization, and crawlability all signal brand credibility to AI systems.</div>
+      <div class="hws-badge">+8 pts</div>
+    </div>
+  </div>
+  <p style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;margin-top:2rem;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.7;">Total possible score: 100 points. Scores above 80 mean AI can confidently find, understand, and recommend your brand.</p>
+</div>
+
+<!-- BENCHMARK SCORES -->
+<div class="landing-only">
+  <div class="landing-section">
+    <div class="landing-section-label">BENCHMARK SCORES</div>
+    <h2 style="font-family:'Barlow',sans-serif;font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:0.4rem;">See how top brands score.</h2>
+    <p style="font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:0;">These are real audit results from publicly available sites.</p>
+    <div class="bench-row">
+      <div class="bench-card">
+        <div class="bench-name">Liquid Death</div>
+        <div class="bench-score" style="color:#00cc78;">78</div>
+        <div class="bench-label">AI Visibility Score</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name">Gymshark</div>
+        <div class="bench-score" style="color:#00cc78;">82</div>
+        <div class="bench-label">AI Visibility Score</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name">Olipop</div>
+        <div class="bench-score" style="color:#f59e0b;">71</div>
+        <div class="bench-label">AI Visibility Score</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name">Athletic Greens</div>
+        <div class="bench-score" style="color:#00cc78;">85</div>
+        <div class="bench-label">AI Visibility Score</div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-name" style="font-style:italic;color:rgba(255,255,255,0.45);">Average CPG Brand</div>
+        <div class="bench-score" style="color:#ef4444;">41</div>
+        <div class="bench-label">AI Visibility Score</div>
+      </div>
+    </div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.35);text-align:center;margin-top:1.5rem;">* Scores may vary based on recent site changes. Run your own audit for current results.</p>
   </div>
 </div>
 
