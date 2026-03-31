@@ -194,7 +194,7 @@ header { display: none; }
 .scan-step {
   display: flex; align-items: center; gap: 12px;
   transition: opacity 0.3s;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 .scan-step.active { opacity: 1; }
 .scan-step.done { opacity: 0.75; }
@@ -209,7 +209,7 @@ header { display: none; }
 .scan-step-text { flex: 1; }
 .scan-step-label {
   font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.5); letter-spacing: -0.01em;
+  color: rgba(255,255,255,0.6); letter-spacing: -0.01em;
   transition: color 0.3s;
 }
 .scan-step.active .scan-step-label { color: #ffffff; }
@@ -1182,6 +1182,8 @@ let stepTimer = null;
 let currentVisualStep = 0;
 
 function showOverlay(url) {
+  const overlay = document.getElementById('scanOverlay');
+  overlay.style.cssText = 'display:flex;position:fixed;inset:0;z-index:200;background:#000000;align-items:center;justify-content:center;flex-direction:column;';
   currentVisualStep = 0;
   let dom = url;
   try { dom = new URL(url.startsWith('http') ? url : 'https://' + url).hostname.replace(/^www\./, ''); } catch { dom = url.replace(/https?:\/\//,'').split('/')[0]; }
@@ -1198,8 +1200,6 @@ function showOverlay(url) {
       </div>
     </div>`).join('');
 
-  const overlay = document.getElementById('scanOverlay');
-  overlay.style.background = '#000000';
   overlay.classList.add('visible');
   clearInterval(stepTimer);
 
