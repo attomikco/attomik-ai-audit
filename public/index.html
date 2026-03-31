@@ -126,7 +126,7 @@ header { display: none; }
 .scan-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.97);
+  background: #000000;
   align-items: center; justify-content: center;
   flex-direction: column;
 }
@@ -194,10 +194,10 @@ header { display: none; }
 .scan-step {
   display: flex; align-items: center; gap: 12px;
   transition: opacity 0.3s;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 .scan-step.active { opacity: 1; }
-.scan-step.done { opacity: 1; }
+.scan-step.done { opacity: 0.75; }
 .scan-step-icon {
   width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -209,18 +209,18 @@ header { display: none; }
 .scan-step-text { flex: 1; }
 .scan-step-label {
   font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.45); letter-spacing: -0.01em;
+  color: rgba(255,255,255,0.5); letter-spacing: -0.01em;
   transition: color 0.3s;
 }
 .scan-step.active .scan-step-label { color: #ffffff; }
 .scan-step.done .scan-step-label { color: var(--accent); }
 .scan-step-sub {
   font-family: 'DM Mono', monospace; font-size: 10px;
-  color: rgba(255,255,255,0.3); margin-top: 1px;
+  color: rgba(255,255,255,0.35); margin-top: 1px;
   transition: color 0.3s;
 }
 .scan-step.active .scan-step-sub { color: rgba(255,255,255,0.6); }
-.scan-step.done .scan-step-sub { color: rgba(0,255,151,0.6); }
+.scan-step.done .scan-step-sub { color: rgba(0,255,151,0.5); }
 @keyframes dash-in { to { stroke-dashoffset: 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -1198,7 +1198,9 @@ function showOverlay(url) {
       </div>
     </div>`).join('');
 
-  document.getElementById('scanOverlay').classList.add('visible');
+  const overlay = document.getElementById('scanOverlay');
+  overlay.style.background = '#000000';
+  overlay.classList.add('visible');
   clearInterval(stepTimer);
 
   // Wait for paint then start
