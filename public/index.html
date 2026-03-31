@@ -1788,6 +1788,72 @@ function buildResults(data, colors, imgUrls, shopify, url, isShopify, brandName)
     })()}
     </div>
 
+    <!-- WHERE YOU STAND -->
+    <div class="reveal d8" style="background:#0d0d0d;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);">HOW YOU COMPARE</div>
+          <div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:4px;max-width:420px;line-height:1.6;">
+            ${combined >= 80 ? "You're in the top 12% of brands we've audited. Most still have room to improve."
+              : combined >= 60 ? "You're above average — but 88% of buyers' AI queries still won't surface you."
+              : combined >= 40 ? `You score near the average of ${combined}/100. Most CPG brands are in the same boat.`
+              : "You're in the bottom tier — but this is fixable. Every issue has a solution."}
+          </div>
+        </div>
+        <div style="flex-shrink:0;">
+          <div style="position:relative;width:200px;height:6px;border-radius:99px;overflow:hidden;display:flex;">
+            <div style="width:40%;height:100%;background:#ef4444;"></div>
+            <div style="width:30%;height:100%;background:#f59e0b;"></div>
+            <div style="width:30%;height:100%;background:#00cc78;"></div>
+          </div>
+          <div style="position:relative;width:200px;margin-top:-2px;">
+            <div style="position:absolute;left:${combined}%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#fff;margin-top:-2px;"></div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);margin-top:12px;display:flex;justify-content:space-between;">
+            <span>0 ← Critical</span><span>Average</span><span>Good → 100</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT WE CHECK -->
+    <div class="reveal d8" style="margin-bottom:1.5rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.75rem;">WHAT WE CHECK</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">🏗</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Structured Data</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+25 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">📝</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Content Depth</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+18 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">🔍</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Meta Signals</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+15 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">🔗</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Open Graph</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+10 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">🖼</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Image Alt Text</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+8 pts</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:16px;">⚡</span>
+          <span style="font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;color:#fff;">Technical SEO</span>
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:#00ff97;background:rgba(0,255,151,0.08);padding:1px 6px;border-radius:4px;margin-left:auto;">+8 pts</span>
+        </div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:10px;">Total: 100 points. Scores above 70 mean AI can confidently recommend your brand.</div>
+    </div>
+
     <!-- WHAT AI SAYS -->
     <div class="reveal d8" style="margin-top:2.5rem;">
       <div style="font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.25rem;">WHAT AI SAYS ABOUT YOUR BRAND</div>
