@@ -274,7 +274,17 @@ header { display: none; }
 .score-grade { font-size: 13px; color: var(--muted); }
 
 /* ENGINE STATUS */
-.engines-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 2rem; }
+.engines-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+@media (max-width: 640px) {
+  .engines-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 .engine-card {
   flex: 1; min-width: 0;
   background: var(--surface); border: 1px solid var(--border);
@@ -341,9 +351,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 /* TWO COL */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 768px) {
-  .engines-row { grid-template-columns: repeat(3, 1fr); }
-}
 @media (max-width: 640px) {
   .two-col, .scores-grid { grid-template-columns: 1fr; }
   .verdict-hero { flex-direction: column; gap: 1.5rem; }
@@ -372,7 +379,6 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .audit-btn { width: 100%; text-align: center; height: 52px; font-size: 16px; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .image-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-  .engines-row { grid-template-columns: repeat(2, 1fr); }
   .verdict-stats { gap: 1rem; }
   .cta-section { padding: 2rem 1.25rem; }
   .scan-inner { padding: 1rem; }
