@@ -10,7 +10,7 @@ export const config = { runtime: 'edge' };
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL     = 'audit@email.attomik.co';
-const NOTIFY_EMAIL   = 'pablo@attomik.co';
+const NOTIFY_EMAIL   = 'hello@attomik.co';
 
 export default async function handler(req) {
   if (req.method === 'OPTIONS') return cors(new Response(null));
